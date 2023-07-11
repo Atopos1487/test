@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="/Css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="/Css/bootstrap-responsive.css"/>
+    <link rel="stylesheet" type="text/css" href="/Css/style.css"/>
+    <script type="text/javascript" src="/Js/jquery.js"></script>
+    <script type="text/javascript" src="/Js/jquery.sorted.js"></script>
+    <script type="text/javascript" src="/Js/bootstrap.js"></script>
+    <script type="text/javascript" src="/Js/ckform.js"></script>
+    <script type="text/javascript" src="/Js/common.js"></script>
+    <script type="text/javascript" src="/layer/layer.js"></script>
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+<form id="myForm" class="definewidth m20">
+    <table class="table table-bordered table-hover definewidth m10">
+        <tr>
+            <td width="10%" class="tableleft">角色名称</td>
+            <td><input type="text" name="rName" id="rName" onblur="checkRole()"/><span id="checkRName"></span></td>
+        </tr>
+        <tr>
+            <td class="tableleft">状态</td>
+            <td>
+                <input type="radio" name="rState" value="0" checked/> 启用
+                <input type="radio" name="rState" value="1"/> 禁用
+            </td>
+        </tr>
+        <tr>
+            <td class="tableleft">权限</td>
+            <input type="hidden" name="hiddenRM" id="hiddenMenu"/>
+            <td id="menuList">
+            </td>
+        </tr>
+        <tr>
+            <td class="tableleft"></td>
+            <td>
+                <button id="submitBtn" class="btn btn-primary" type="button">保存</button> &nbsp;&nbsp;<button
+                    type="button" class="btn btn-success" name="backid" id="backid">返回列表
+            </button>
+            </td>
+        </tr>
+    </table>
+</form>
+</body>
+</html>
+<script>
+    var flag = 0;
+    $(function () {
+        $(':checkbox[name="group[]"]').click(function () {
+            $(':checkbox', $(this).closest('li')).prop('checked', this.checked);
+        });
+
+        $('#backid').click(function () {
+            window.location.href = "index.html";
+        });
+        queryMenuAll();
+        checkRole();
+        $("#submitBtn").click(function () {
+
+            var rName = $("#rName").val();
+            var hiddenRM = new Array();
+            $("input[name=roleMenus1]").each(function () {
+                if ($(this).is(':checked')) {
+                    hiddenRM.push($(this).val());
+                }
+            });
+            $("#hiddenMenu").val(hiddenRM);
+
+            if ($.trim(rName) == null || $.trim(rName) == "") {
+                alert("角色名称不能为空！");
+                // layer.msg("角色名称不能为空！", {icon: 2});
+                return;
+            }
+
+            if (flag == 1) {
+                alert("角色名称重复不能提交！");
+                return;
+            }
+            if (hiddenRM == null || hiddenRM == "") {
+                alert("请选择至少一个角色菜单权限！");
+                // layer.msg("请选择至少一个角色菜单权限！", {icon: 2});
+                return;
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/role/",
+                data: $("#myForm").serialize(),
+                datatype: "json",
+                success: function (data) {
+                    if (data.code == 200) {
+                        alert("添加成功！");
+                        setTimeout(function () {
+                            window.location.href = "/pages/Role/index.html";
+                        }, 2000)
+                    }
+                }
+            })
+        })
+    });
+
+    //查询所有菜单列表展示
+    function queryMenuAll() {
+        $.ajax({
+            type: "GET",
+            url: "/role/muenList",
+            datatype: "json",
+            success: function (data) {
+                let list = data.pageInfo.list;
+                let str = "";
+                for (let i = 0; i < list.length; i++) {
+                    str += '<ul><label class=\'checkbox inline\'>' +
+                        '<input type=\'checkbox\' id="menuGroup" name="roleMenus1" value="' + list[i].mId + '">' +
+                        list[i].mName + '</label></ul>';
+                }
+                $("#menuList").html(str);
+            }
+        })
+    }
+
+    //角色名唯一验证
+    function checkRole() {
+        var rName = $("#rName").val();
+        if (rName != null && rName != "") {
+            $.ajax({
+                type: "GET",
+                url: "/role/name/",
+                data: {
+                    rName: rName
+                },
+                success: function (data) {
+
+                    if (data.code == 200) {
+                        $("#checkRName").html(" ").css("color", "green");
+                        flag = 0;
+                    } else if (data.code != 200) {
+                        flag = 1;
+                        $("#checkRName").html(" 角色名称重复，请重新输入！").css("color", "red");
+                    }
+                }
+            })
+        }
+    }
+</script>

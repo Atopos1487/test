@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>添加医生--中软高科-2015</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap-responsive.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/style.css" />
+    <script type="text/javascript" src="../../Js/jquery.js"></script>
+    <script type="text/javascript" src="../Js/jquery.sorted.js"></script>
+    <script type="text/javascript" src="../../Js/bootstrap.js"></script>
+    <script type="text/javascript" src="../../Js/ckform.js"></script>
+    <script type="text/javascript" src="../../Js/common.js"></script>
+    <script type="text/javascript" src="../../Js/ckeditor/ckeditor.js"></script>
+ 
+
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+
+
+    </style>
+    <script type="text/javascript">
+    $(function () {       
+		$('#backid').click(function(){
+				window.location.href="index.html";
+		 });
+    });
+    </script>
+</head>
+<body>
+<form id="myForm" class="definewidth m20">
+    <table class="table table-bordered table-hover definewidth m10">
+        <tr>
+            <td width="10%" class="tableleft">姓名</td>
+            <td><input type="text" name="d_name" value=""/></td>
+        </tr>
+
+        <tr>
+            <td width="10%" class="tableleft">身份证号</td>
+            <td><input type="text" name="d_idcar" value=""/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">手机</td>
+            <td><input type="text" name="d_phone" /></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">座机</td>
+            <td><input type="text" name="d_telphone" value=""/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">性别</td>
+            <td><input type="radio" name="d_sex" value="" checked/>男&nbsp;&nbsp;&nbsp;
+                <input type="radio" name="d_sex" value=""/>女
+            </td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">出生年月</td>
+            <td><input type="date" name="d_birthday" value=""/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">年龄</td>
+            <td><input type="text" name="d_age" value=""/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">电子邮箱</td>
+            <td><input type="text" name="d_email" value=""/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">所属科室</td>
+            <td>
+                <select id="dep_name" name="dep_name">
+
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">学历</td>
+            <td>
+                <select id="d_xueli" name="d_xueli">
+                    <option value="0">---请选择学历---</option>
+                    <option value="1">专科</option>
+                    <option value="2">本科</option>
+                    <option value="3">博士</option>
+                    <option value="4">博士后</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">备注</td>
+            <td><textarea name="d_desc"></textarea></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <center>
+                    <button id="btnAdd" class="btn btn-primary" type="button">保存</button> &nbsp;&nbsp;
+                    <button type="button" class="btn btn-success" name="backid" id="backid">返回列表</button>
+                </center>
+            </td>
+        </tr>
+    </table>
+</form>
+</body>
+</html>
+<script type="text/javascript">
+
+    $(function () {
+        //添加所属的科室
+        $.ajax({
+            type: "GET",
+            url: "/doctor/dep/all",
+            data: "",//主要是分页和多条件参数数据
+            dataType:"json",
+            success: function(vo){
+                let list=vo.obj;
+                $("#dep_name").append('<option value="0">---请选择科室---</option>')
+                for(let i = 0; i < list.length; i++){
+                    let dep_id = list[i].dep_id;
+                    let dep_name = list[i].dep_name;
+                    $("#dep_name").append('<option value="' + dep_id + '">' + dep_name + '</option>');
+                }
+            }
+        });
+
+        $("#btnAdd").click(function (){
+            if($("#dep_name").val() === "0" || $("#d_xueli").val() === "0"){
+                alert("请选择学历和科室！");
+            }
+            //添加医生的基本信息；
+            else{
+                $.ajax({
+                    type: "POST",
+                    url: "/doctor/",
+                    data: $("#myForm").serialize(),//主要是分页和多条件参数数据
+                    dataType:"json",
+                    success: function(vo){
+                        if(vo.code==200) {
+                            window.location.href = "index.html";
+                        }else{
+                            alert("添加失败！"+vo.msg);
+                        }
+                    }
+                });
+            }
+        });
+
+        $('#backid').click(function(){
+            window.location.href="index.html";
+        });
+    });
+</script>

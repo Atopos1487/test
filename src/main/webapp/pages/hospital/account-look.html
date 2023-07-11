@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>结算详细--中软高科-2015</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap-responsive.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/style.css" />
+    <script type="text/javascript" src="../../Js/jquery.js"></script>
+    <script type="text/javascript" src="../../Js/bootstrap.js"></script>
+    <script type="text/javascript" src="../../Js/ckform.js"></script>
+    <script type="text/javascript" src="../../Js/common.js"></script>
+
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+
+
+    </style>
+    <script type="text/javascript">
+        function checkall(){
+            var alls=document.getElementsByName("check");
+            var ch=document.getElementById("checkall");
+            if(ch.checked){
+                for(var i=0;i<alls.length;i++){
+                    alls[i].checked=true;
+                }
+            }else{
+                for(var i=0;i<alls.length;i++){
+                    alls[i].checked=false;
+                }
+            }
+        }
+        function delAll(){
+            var alls=document.getElementsByName("check");
+            var ids=new Array();
+            for(var i=0;i<alls.length;i++){
+                if(alls[i].checked){
+                    ids.push(alls[i].value);
+                }
+            }
+            if(ids.length>0){
+                if(confirm("确认操作?")){
+                    alert("成功!");
+                }
+            }else{
+                alert("请选中要操作的项");
+            }
+        }
+        $(function () {
+            $('#backid').click(function(){
+                window.location.href="/pages/hospital/account.html";
+            });
+        });
+    </script>
+</head>
+<body>
+
+<form id="myForm" hidden>
+    <input name="pageNum" type="text" value="">
+</form>
+<table class="table table-bordered table-hover definewidth m10" >
+    <thead>
+    <tr>
+        <th>病历号</th>
+        <th>姓名</th>
+        <th>收费项目</th>
+        <th>收费金额</th>
+        <th><span id="getMoney">收费日期</span></th>
+    </tr>
+    </thead>
+    <tbody id="dataText">
+
+    </tbody>
+
+</table>
+
+<table class="table table-bordered table-hover definewidth m10" >
+    <tr><th colspan="5">
+        <div>
+            <button type="button" class="btn btn-success" name="backid" id="backid">返回列表</button>
+            <button type="button" class="btn btn-success" >导出excel</button>
+        </div>
+
+    </th></tr>
+</table>
+
+
+<table class="table table-bordered table-hover definewidth m10">
+    <tr>
+        <td width="10%" class="tableleft">总花费：</td>
+        <td><span id="totalPrice"></span>元</td>
+    </tr>
+    <tr>
+        <td width="10%" class="tableleft">押金：</td>
+        <td><span id="antecedent"></span>元</td>
+    </tr>
+    <tr>
+        <td width="10%" class="tableleft">余额：</td>
+        <td><span id="balance"></span>元</td>
+    </tr>
+</table>
+
+</body>
+</html>
+<script type="text/javascript">
+
+    var antecedent0;
+    var balance;
+    var totalPrice = 0;
+    var hrName0;
+    var hrId0;
+    var bhcp;
+    var pageNum0;
+
+
+    //页面加载完毕之后发送异步请求
+    $(function(){
+        var url = document.location.toString();
+        var bhId=url.GetValue("bhId");
+
+        loadData();
+        $("div[class='inline pull-right page']>a").click(function(){
+            var num=$(this).attr("name");
+            if (num==0){
+                return;
+            }
+            loadData();
+        });
+    });
+
+    String.prototype.GetValue= function(para) {
+        var reg = new RegExp("(^|&)"+ para +"=([^&]*)(&|$)");
+        var r = this.substr(this.indexOf("\?")+1).match(reg);
+        if (r!=null) return unescape(r[2]); return null;
+    };
+
+    //时间戳转换为日期
+    function times(timeS) {
+        // 比如需要这样的格式 yyyy-MM-dd hh:mm:ss
+        var date = new Date(timeS);
+        Y = date.getFullYear() + '-';
+        M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+        D = date.getDate()<10?'0'+date.getDate():date.getDate() + '  ';
+        h = date.getHours()<10?'0'+date.getHours():date.getHours();
+        m = date.getMinutes()<10? '0'+date.getMinutes() :date.getMinutes();
+
+        return Y+M+D+" "+h+':'+m;
+    }
+
+
+    //加载数据
+    function loadData(){
+        var url = document.location.toString();
+        var bhId=url.GetValue("bhId");
+
+        //病者对应的住院信息
+        $.ajax({
+            type: "GET",
+            url: "/beHospital/"+bhId,
+            dataType:"json",
+            async:false,
+            success: function(vo){
+                var obj=vo.obj;
+                var hrId=obj.hosr_id;
+                hrId0 = hrId;
+                var hrName = obj.hosregister.hosr_name;
+                hrName0 = hrName;
+                var antecedent = obj.beh_antecedent;
+                var bhClosePrice = obj.beh_closeprice;
+                bhcp = bhClosePrice;
+                antecedent0 = antecedent;
+            }
+        });
+        $.ajax({
+            type:'GET',
+            url:"/pay/"+hrId0,
+            data: $("#myForm").serialize(),//主要是分页和多条件参数数据
+            dataType:'json',
+            async:false,
+            success:function (vo) {
+                var list = vo.list;
+                var str='';
+                for (var i =0;i<list.length;i++){
+                    var obj = list[i];
+                    var cpName = obj.chap_name;
+                    var cpMoney = obj.chap_money;
+                    totalPrice += parseInt(cpMoney);
+                    var  intime = obj.chap_intime==null?"":times(obj.chap_intime);
+                    str +='<tr >\n' +
+                        '            <td style="vertical-align:middle;">'+hrId0+'</td>\n' +
+                        '            <td style="vertical-align:middle;">'+hrName0+'</td>\n' +
+                        '            <td style="vertical-align:middle;">'+cpName+'</td>\n' +
+                        '            <td style="vertical-align:middle;">'+cpMoney+'</td>\n' +
+                        '            <td style="vertical-align:middle;">'+intime+'</td>\n' +
+                        '         </tr>';
+
+                }
+                $("#dataText").html(str);
+                //填充分页数据
+                //fillPageData(vo.pageInfo);
+            }
+        });
+        $("#antecedent").html(antecedent0);
+        $("#totalPrice").html(totalPrice);
+        $("#balance").html(antecedent0-totalPrice);
+    }
+
+</script>
+

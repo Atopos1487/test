@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="/Css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="/Css/bootstrap-responsive.css" />
+    <link rel="stylesheet" type="text/css" href="/Css/style.css" />
+    <script type="text/javascript" src="/Js/jquery.js"></script>
+    <script type="text/javascript" src="/Js/jquery.sorted.js"></script>
+    <script type="text/javascript" src="/Js/bootstrap.js"></script>
+    <script type="text/javascript" src="/Js/ckform.js"></script>
+    <script type="text/javascript" src="/Js/common.js"></script>
+    <script type="text/javascript" src="/layer/layer.js"></script>
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+    </style>
+    <script>
+    $(function () {
+        var flag=0;
+		$('#backid').click(function(){
+				window.location.href="index.html";
+		 });
+
+		//菜单名称唯一性验证
+        $("#mName").blur(function (){
+            var mName=$("#mName").val();
+            $.ajax({
+                type:"GET",
+                url:"/menu/name/",
+                data:{
+                    mName :mName},
+                success:function (data){
+                    if (data.code==200){
+                        $("#mNameCheck").html("菜单名称可用！").css("color","green");
+                        flag=0;
+                    }else {
+                        $("#mNameCheck").html("菜单名称重复，请重新输入！").css("color","red");
+                        flag=1;
+                    }
+                }
+            })
+        });
+
+        //点击添加进行资源添加
+        $("#updateBtn").click(function (){
+            let mName = $("#mName").val();
+            let mUrl = $("#mUrl").val();
+            if (mName=null || mName ==""){
+                layer.msg("菜单名称不能为空",{icon:2});
+                return;
+            }
+            if (mUrl=null || mUrl ==""){
+                layer.msg("菜单路径不能为空",{icon:2});
+                return;
+            }
+            if (flag ==1){
+                layer.msg("菜单名称重复不能提交",{icon:2});
+                return;
+            }
+            $.ajax({
+                type: "POST",
+                url: "/menu/",
+                data:$("#myForm").serialize(),
+                datatype:"json",
+                success:function (data){
+                    if (data.code == 200){
+                        layer.msg("添加成功",{icon:1});
+                        setTimeout(function (){
+
+                        window.location.href="/pages/Resource/index.html";
+                        },2000)
+                    }else {
+                        layer.msg("添加失败",{icon:1});
+                    }
+                }
+            })
+        })
+    });
+</script>
+</head>
+<body>
+<form id="myForm" class="definewidth m20">
+<input type="hidden" name="id" value="{$user.id}" />
+    <table class="table table-bordered table-hover definewidth m10">
+        <tr>
+            <td width="10%" class="tableleft">资源名称</td>
+            <td><input type="text" name="mName" id="mName"/><span id="mNameCheck"></span></td>
+        </tr>
+        <tr>
+            <td class="tableleft">url</td>
+            <td><input type="text" name="mUrl" id="mUrl"/></td>
+        </tr>
+        <tr>
+            <td class="tableleft">是否有效</td>
+            <td>
+                <input type="radio" name="mState" value="0" checked/> 有效
+              <input type="radio" name="mState" value="1" /> 无效
+            </td>
+        </tr>
+        <tr>
+            <td class="tableleft"></td>
+            <td>
+                <button type="button" class="btn btn-primary" id="updateBtn">添加</button>&nbsp;&nbsp;<button type="button" class="btn btn-success" name="backid" id="backid">返回列表</button>
+            </td>
+        </tr>
+    </table>
+</form>
+</body>
+</html>

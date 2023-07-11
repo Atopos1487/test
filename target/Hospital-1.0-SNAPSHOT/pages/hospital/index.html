@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>入院办理--中软高科-2015</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap-responsive.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/style.css" />
+    <script type="text/javascript" src="../../Js/jquery.js"></script>
+    <script type="text/javascript" src="../../Js/bootstrap.js"></script>
+    <script type="text/javascript" src="../../Js/ckform.js"></script>
+    <script type="text/javascript" src="../../Js/common.js"></script>
+
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+
+
+    </style>
+    <script type="text/javascript">
+        $(function () {
+            $('#newNav').click(function(){
+                window.location.href="/pages/hospital/add.html";
+            });
+        });
+
+        function checkall(){
+            var alls=document.getElementsByName("check");
+            var ch=document.getElementById("checkall");
+            if(ch.checked){
+                for(var i=0;i<alls.length;i++){
+                    alls[i].checked=true;
+                }
+            }else{
+                for(var i=0;i<alls.length;i++){
+                    alls[i].checked=false;
+                }
+            }
+        }
+        function delAll(){
+            var alls=document.getElementsByName("check");
+            var ids=new Array();
+            for(var i=0;i<alls.length;i++){
+                if(alls[i].checked){
+                    ids.push(alls[i].value);
+                }
+            }
+            if(ids.length>0){
+                if(confirm("确认操作?")){
+                    alert("成功!");
+                }
+            }else{
+                alert("请选中要操作的项");
+            }
+        }
+    </script>
+</head>
+<body>
+
+<form id="myForm" class="definewidth m20">
+    <input type="hidden" name="pageNum">
+    <input type="hidden" name="pageSize">
+    <table class="table table-bordered table-hover definewidth m10">
+        <tr>
+            <td width="10%" class="tableleft">病例号：</td>
+            <td><input type="text" name="hosr_id"/></td>
+
+            <td width="10%" class="tableleft">主治医生：</td>
+            <td><input type="text" name="d_name"/></td>
+
+            <td width="10%" class="tableleft">科室：</td>
+            <td><input type="text" name="dep_name"/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">住院时间：</td>
+            <td colspan="5">
+                <input type="date" name="beginDate"/>&nbsp;至&nbsp;
+                <input type="date" name="endDate"/>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <button  class="btn btn-primary" onclick="loadData()" type="button">查询</button>
+                <button  class="btn btn-primary" type="button">清空</button>
+            </td>
+        </tr>
+    </table>
+</form>
+
+<table class="table table-bordered table-hover definewidth m10" >
+    <thead>
+    <tr>
+        <th><input type="checkbox" id="checkall" onChange="checkall();"></th>
+        <th>病历号</th>
+        <th>姓名</th>
+        <th>床位号</th>
+        <th>联系电话</th>
+        <th>押金</th>
+        <th>主治医生</th>
+        <th>入院时间</th>
+        <th>科室</th>
+        <th>状态</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody id="dataText">
+
+    </tbody>
+
+</table>
+
+<table class="table table-bordered table-hover definewidth m10" >
+    <tr>
+        <th colspan="5">
+            <div class="inline pull-right page" id="pageInfo">
+                <a href='#' id="firstPage">首页</a>
+                <a href='#' id="prePage">上一页</a>
+                <a href='#' id="nextPage">下一页</a>
+                <a href='#' id="lastPage">最后一页</a>
+                &nbsp;&nbsp;&nbsp;共<span id="total"></span>条记录
+                &nbsp;&nbsp;第<span id="currentPage"></span>页
+                共<span id="pages"></span>页
+            </div>
+            <div>
+                <button type="button" class="btn btn-success" id="newNav">添加住院信息</button>&nbsp;&nbsp;&nbsp;
+                <button type="button" class="btn btn-success" id="delPro">出院</button>&nbsp;&nbsp;&nbsp;
+                <button type="button" class="btn btn-success" id="delPro1">退院</button>&nbsp;&nbsp;&nbsp;
+                <button type="button" class="btn btn-success" id="exportInfo">导出Excel</button>
+            </div>
+        </th>
+    </tr>
+</table>
+
+</body>
+</html>
+<script>
+    //页面加载完毕之后发送异步请求
+    $(function(){
+        loadData();
+        $("div[class='inline pull-right page']>a").click(function(){
+            var num=$(this).attr("name");
+            if (num==0){
+                return;
+            }
+            $("input[name='pageNum']").val(num);
+            loadData();
+        });
+
+        $("#exportInfo").click(function () {
+            window.location.href='/hospital/exportExcel';
+        });
+
+    });
+
+    //退院
+    function exit(id) {
+        console.log(id);
+        var flag = confirm("确定要退院吗?");
+        if (flag){
+            $.ajax({
+                type: 'DELETE',
+                url: '/beHospital/exit/'+id,
+                data: '_method=DELETE',
+                dataType: 'json',
+                success: function (vo) {
+                    if (vo.code){
+                        loadData();
+                    }else{
+                        alert(vo.msg);
+                    }
+                }
+            });
+
+
+        }else {
+            return;
+        }
+    }
+
+    //出院
+    function charge(id) {
+        var flag = confirm("确定要出院吗?");
+        if (flag){
+            $.ajax({
+                type: 'DELETE',
+                url: '/beHospital/charge/'+id,
+                data: '_method=DELETE',
+                dataType: 'json',
+                success: function (vo) {
+                    if (vo.code){
+                        loadData();
+                    }else{
+                        alert(vo.msg);
+                    }
+                }
+            });
+        }else {
+            return;
+        }
+    }
+
+
+
+    //填充分页信息
+    function fillPageData(pageInfo) {
+        //填充信息
+        $("#total").html(pageInfo.total);
+        $("#pages").html(pageInfo.pages);
+        $("input[name='pageNum']").val(pageInfo.pageNum);
+        $("input[name='pageSize']").val(pageInfo.pageSize);
+        //设置按钮的属性值和样式
+        $("#firstPage").attr("name",1);
+        $("#currentPage").html(pageInfo.pageNum);
+        $("#prePage").attr("name",pageInfo.prePage);
+        $("#nextPage").attr("name",pageInfo.nextPage);
+        $("#lastPage").attr("name",pageInfo.pages);
+        $("#firstPage").removeClass("disabled");
+        $("#prePage").removeClass("disabled");
+        $("#firstPage").removeClass("disabled");
+        $("#prePage").removeClass("disabled");
+        if(pageInfo.isFirstPage){//如果是第一页：上一页和首页禁用
+            $("#firstPage").addClass("disabled");
+            $("#prePage").addClass("disabled");
+        }
+        if(pageInfo.isLastPage){//如果已经是最后一页：下一页和末页禁用
+            $("#nextPage").addClass("disabled");
+            $("#lastPage").addClass("disabled");
+        }
+    }
+
+    String.prototype.GetValue= function(para) {
+        var reg = new RegExp("(^|&)"+ para +"=([^&]*)(&|$)");
+        var r = this.substr(this.indexOf("\?")+1).match(reg);
+        if (r!=null) return unescape(r[2]); return null;
+    };
+
+    //时间戳转换为日期
+    function times(timeS) {
+        // 比如需要这样的格式 yyyy-MM-dd hh:mm:ss
+        var date = new Date(timeS);
+        Y = date.getFullYear() + '-';
+        M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+        D = date.getDate()<10?'0'+date.getDate():date.getDate() + '  ';
+        h = date.getHours()<10?'0'+date.getHours():date.getHours();
+        m = date.getMinutes()<10? '0'+date.getMinutes() :date.getMinutes();
+
+        return Y+M+D+" "+h+':'+m;
+    }
+
+    //病号状态
+    function statusC(num) {
+        if (num == 0) {
+            return "已挂号";
+        } else if (num == 1) {
+            return "已住院";
+        } else if(num==2){
+            return "已出院";
+        }else if (num==3){
+            return "已退号"
+        }else if (num==4){
+            return "已退院"
+        }
+    }
+
+
+
+    //加载数据
+    function loadData(){
+        var url = document.location.toString();
+        var pageNum=url.GetValue("pageNum");
+        var pageSize=url.GetValue("pageSize");
+        if(pageNum!=null&&$("input[name='pageNum']").val()!=null){
+            $("input[name='pageNum']").val(pageNum);
+        }
+        if(pageSize!=null&&$("select[name='pageSize']").val()!=null){
+            $("select[name='pageSize']").val(pageSize);
+        }
+        //alert($("#myForm").serialize())
+        $.ajax({
+            type: "GET",
+            url: "/beHospital/list",
+            data: $("#myForm").serialize(),//主要是分页和多条件参数数据
+            dataType:"json",
+            success: function(vo){
+                //alert( "Data Saved: " + vo );
+                var list=vo.pageInfo.list;
+                var str="";
+                for(var i=0;i<list.length;i++){
+                    var obj=list[i];
+                    var hrId=obj.hosr_id;
+                    var bhId = obj.beh_id;
+                    var inDate=obj.beh_intime==null?'':times(obj.beh_intime);
+                    var status = obj.hosregister.hosr_state==0?statusC(obj.hosregister.hosr_state):statusC(obj.hosregister.hosr_state);
+                    var sta = obj.hosregister.hosr_state;
+                    var hrName = obj.hosregister.hosr_name;
+                    var hrPhone = obj.hosregister.hosr_phone;
+                    var patientBed = obj.beh_patbed;
+                    var antecedent = obj.beh_antecedent;
+                    var doctorName = obj.doctor.d_name;
+                    var officeName = obj.department.dep_name;
+                    var closePrice = obj.beh_closeprice;
+                    // console.log("price:"+typeof  closePrice)
+                    var operation ='';
+                    if (closePrice==0 && sta==1) {
+                        operation='<a href="/pages/hospital/look.html?bhId='+bhId+'">详情>></a>&nbsp;&nbsp;&nbsp;\n' +
+                            '\t\t\t\t<a href="/pages/hospital/edit.html?bhId='+bhId+'">更改</a>&nbsp;&nbsp;&nbsp;\n' +
+                            '\t\t\t\t<a href="/pages/hospital/add_many.html?hrId='+hrId+'">缴纳押金</a>&nbsp;&nbsp;&nbsp;';
+                    }else if (closePrice==1 && sta==1){
+                        operation='<a href="/pages/hospital/look.html?bhId='+bhId+'">详情>></a>&nbsp;&nbsp;&nbsp;\t\t\t\t\n' +
+                            '\t\t\t\t<a onclick="exit('+hrId+')">退院</a>&nbsp;&nbsp;&nbsp;\n' +
+                            '\t\t\t\t<a onclick="charge('+hrId+')">出院</a>';
+                    }else {
+                        operation='<a href="/pages/hospital/look.html?bhId='+bhId+'">详情>></a>';
+                    }
+
+                    str+='<tr >\n' +
+                        '         \t<td style="vertical-align:middle;"><input type="checkbox" name="check" value="1"></td>\n' +
+                        '            <td style="vertical-align:middle;">'+hrId+'</td>\n' +
+                        '            <td style="vertical-align:middle;">'+hrName+'</td>\n' +
+                        '            <td style="vertical-align:middle;">'+patientBed+'</td>\n' +
+                        '            <td style="vertical-align:middle;">'+hrPhone+'</td>\n' +
+                        '            <td style="vertical-align:middle;">'+antecedent+'元</td>\n' +
+                        '            <td style="vertical-align:middle;">'+doctorName+'</td>\n' +
+                        '            <td style="vertical-align:middle;">'+inDate+'</td>\n' +
+                        '            <td style="vertical-align:middle;">'+officeName+'</td>\n' +
+                        '            <td style="vertical-align:middle;">'+status+'</td>\n' +
+                        '            <td style="vertical-align:middle;">\n' +operation+'</td>\n' +
+                        '        </tr>';
+                }
+                $("#dataText").html(str);
+                //填充分页数据
+                fillPageData(vo.pageInfo);
+            }
+        });
+
+
+
+    }
+</script>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="icon" href="/pages/favicon.ico">
+    <title>枣阳市第二人民医院管理系统--中软高科2015</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="/Css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="/Css/bootstrap-responsive.css"/>
+    <link rel="stylesheet" type="text/css" href="/Css/style.css"/>
+    <script type="text/javascript" src="/Js/jquery.js"></script>
+    <script type="text/javascript" src="/Js/jquery.sorted.js"></script>
+    <script type="text/javascript" src="/Js/bootstrap.js"></script>
+    <script type="text/javascript" src="/Js/ckform.js"></script>
+    <script type="text/javascript" src="/Js/common.js"></script>
+    <script type="text/javascript" src="/layer/layer.js"></script>
+    <style type="text/css">
+        body {
+            padding-top: 40px;
+            padding-bottom: 40px;
+            background-color: #f5f5f5;
+        }
+
+        .form-signin {
+            max-width: 300px;
+            padding: 19px 29px 29px;
+            margin: 0 auto 20px;
+            background-color: #fff;
+            border: 1px solid #e5e5e5;
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;
+            -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+            -moz-box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+        }
+
+        .form-signin .form-signin-heading,
+        .form-signin .checkbox {
+            margin-bottom: 10px;
+        }
+
+        .form-signin input[type="text"],
+        .form-signin input[type="password"] {
+            font-size: 16px;
+            height: auto;
+            margin-bottom: 15px;
+            padding: 7px 9px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <br>
+    <br>
+    <!--    <form class="form-signin" method="post" action="index.html#1/2">-->
+    <form class="form-signin" id="myForm">
+        <h2 class="form-signin-heading" align="center">登录系统</h2>
+        <input type="text" name="uLoginname" class="input-block-level" id="uLoginname" placeholder="登录名">
+        <input type="password" name="uPassword" class="input-block-level" id="uPassword" placeholder="密码">
+        <input type="text" name="verify" class="input-medium" id="code" placeholder="验证码">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <span style="cursor:pointer;font-size: 17px" id="randomCode">1234</span>
+        <p align="center">
+            <button class="btn btn-large btn-primary" type="button" id="loginBtn">登录</button>&nbsp;&nbsp;&nbsp;&nbsp;
+            <button class="btn btn-large btn-primary" type="reset" id="reset">重置</button>
+        </p>
+    </form>
+</div>
+</body>
+</html>
+<script>
+    $(function () {
+        var random2 = rand(1000, 9000);
+        $("#randomCode").html(random2);
+
+        $("#loginBtn").click(function () {
+            //获取表单信息
+            var uLoginname = $("#uLoginname").val();
+            var uPassword = $("#uPassword").val();
+            var code = $("#code").val();
+            var randomCode = $("#randomCode").html();
+
+            //表单校验
+            if ($.trim(uLoginname) == "") {
+                alert("登录名不能为空！");
+                return;
+            } else if ($.trim(uPassword) == "") {
+                alert("密码不能为空！");
+                return;
+            } else if ($.trim(code) == "") {
+                alert("验证码不能为空！");
+                // layer.msg("验证码不能为空！", {icon: 2});
+                return;
+            } else if (code != randomCode) {
+                alert("验证码输入错误！");
+                // layer.msg("验证码输入错误！", {icon: 2});
+                return;
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/login/",
+                data: {
+                    uLoginname: uLoginname,
+                    uPassword: uPassword
+                },
+                datatype: "json",
+                success: function (data) {
+                    if (data.code == 200) {
+                        alert("登录成功！");
+                        // layer.msg("登录成功！", {icon: 1});
+                        var name = data.obj.uLoginname;
+                        // var name="admin";
+                        setTimeout(function () {
+                            window.location.href = "/pages/index.html?name=" + name;
+                        }, 2000);
+                    } else if (data.code == 501) {
+                        alert(data.msg);
+                        // layer.msg(data.message, {icon: 2});
+                    } else if (data.code == 502) {
+                        alert(data.msg);
+                    } else if (data.code == 503) {
+                        alert(data.msg);
+                    } else {
+                        alert("登录失败！用户名或密码错误！");
+                        // layer.msg("登录失败！用户名或密码错误！");
+                    }
+                }
+            })
+        });
+
+        //获取随机验证码，点击可再次生成
+        $("#randomCode").click(function () {
+            var random = rand(1000, 9000);
+            $("#randomCode").html(random);
+        })
+    });
+
+    //随机码函数
+    function rand(min, max) {
+        return Math.floor(Math.random() * (max - min)) + min;
+    }
+</script>

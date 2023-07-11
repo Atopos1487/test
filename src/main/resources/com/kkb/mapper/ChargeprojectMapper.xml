@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kkb.mapper.ChargeprojectMapper">
+  <resultMap id="BaseResultMap" type="com.kkb.pojo.Chargeproject">
+    <id column="chap_id" jdbcType="INTEGER" property="chap_id" />
+    <result column="chap_name" jdbcType="VARCHAR" property="chap_name" />
+    <result column="chap_money" jdbcType="INTEGER" property="chap_money" />
+    <result column="chap_intime" jdbcType="DATE" property="chap_intime" />
+    <result column="isDel" jdbcType="INTEGER" property="isDel" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    chap_id, chap_name, chap_money, chap_intime, isDel
+  </sql>
+  <select id="selectByExample" parameterType="com.kkb.pojo.ChargeprojectExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from chargeproject
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from chargeproject
+    where chap_id = #{chap_id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from chargeproject
+    where chap_id = #{chap_id,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.kkb.pojo.ChargeprojectExample">
+    delete from chargeproject
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.kkb.pojo.Chargeproject">
+    insert into chargeproject (chap_id, chap_name, chap_money, 
+      chap_intime, isDel)
+    values (#{chap_id,jdbcType=INTEGER}, #{chap_name,jdbcType=VARCHAR}, #{chap_money,jdbcType=INTEGER}, 
+      #{chap_intime,jdbcType=DATE}, #{isDel,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="com.kkb.pojo.Chargeproject">
+    insert into chargeproject
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="chap_id != null">
+        chap_id,
+      </if>
+      <if test="chap_name != null">
+        chap_name,
+      </if>
+      <if test="chap_money != null">
+        chap_money,
+      </if>
+      <if test="chap_intime != null">
+        chap_intime,
+      </if>
+      <if test="isDel != null">
+        isDel,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="chap_id != null">
+        #{chap_id,jdbcType=INTEGER},
+      </if>
+      <if test="chap_name != null">
+        #{chap_name,jdbcType=VARCHAR},
+      </if>
+      <if test="chap_money != null">
+        #{chap_money,jdbcType=INTEGER},
+      </if>
+      <if test="chap_intime != null">
+        #{chap_intime,jdbcType=DATE},
+      </if>
+      <if test="isDel != null">
+        #{isDel,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.kkb.pojo.ChargeprojectExample" resultType="java.lang.Long">
+    select count(*) from chargeproject
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update chargeproject
+    <set>
+      <if test="record.chap_id != null">
+        chap_id = #{record.chap_id,jdbcType=INTEGER},
+      </if>
+      <if test="record.chap_name != null">
+        chap_name = #{record.chap_name,jdbcType=VARCHAR},
+      </if>
+      <if test="record.chap_money != null">
+        chap_money = #{record.chap_money,jdbcType=INTEGER},
+      </if>
+      <if test="record.chap_intime != null">
+        chap_intime = #{record.chap_intime,jdbcType=DATE},
+      </if>
+      <if test="record.isDel != null">
+        isDel = #{record.isDel,jdbcType=INTEGER},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update chargeproject
+    set chap_id = #{record.chap_id,jdbcType=INTEGER},
+      chap_name = #{record.chap_name,jdbcType=VARCHAR},
+      chap_money = #{record.chap_money,jdbcType=INTEGER},
+      chap_intime = #{record.chap_intime,jdbcType=DATE},
+      isDel = #{record.isDel,jdbcType=INTEGER}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.kkb.pojo.Chargeproject">
+    update chargeproject
+    <set>
+      <if test="chap_name != null">
+        chap_name = #{chap_name,jdbcType=VARCHAR},
+      </if>
+      <if test="chap_money != null">
+        chap_money = #{chap_money,jdbcType=INTEGER},
+      </if>
+      <if test="chap_intime != null">
+        chap_intime = #{chap_intime,jdbcType=DATE},
+      </if>
+      <if test="isDel != null">
+        isDel = #{isDel,jdbcType=INTEGER},
+      </if>
+    </set>
+    where chap_id = #{chap_id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.kkb.pojo.Chargeproject">
+    update chargeproject
+    set chap_name = #{chap_name,jdbcType=VARCHAR},
+      chap_money = #{chap_money,jdbcType=INTEGER},
+      chap_intime = #{chap_intime,jdbcType=DATE},
+      isDel = #{isDel,jdbcType=INTEGER}
+    where chap_id = #{chap_id,jdbcType=INTEGER}
+  </update>
+
+  <select id="HospitalSettlementDetails" resultType="com.kkb.vo.AccountVO">
+    SELECT
+      p.beh_id,
+      b.beh_name,
+      c.chap_name,
+      c.chap_money,
+      c.chap_intime,
+      b.beH_antecedent
+    FROM
+        pricepeople p
+    LEFT JOIN chargeproject c ON c.chap_id = p.chap_id
+    LEFT JOIN behospital b ON b.beh_id = p.beh_id
+    WHERE
+        b.hosr_id =#{id}
+  </select>
+
+  <select id="HospitalSettlement" resultType="com.kkb.vo.ChargeVO">
+    SELECT
+    beh_id,b.hosr_id,beh_antecedent,beh_closeprice
+    FROM
+        behospital b
+    LEFT JOIN hosregister h on b.hosr_id = h.hosr_id
+    WHERE 1=1
+        <if test="hosr_id!=null">
+          AND b.hosr_id=#{hosr_id}
+        </if>
+        <if test="hosr_name!=null and hosr_name!=''">
+          AND h.hosr_name=#{hosr_name}
+        </if>
+  </select>
+</mapper>

@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kkb.mapper.HospitaluserMapper">
+  <resultMap id="BaseResultMap" type="com.kkb.pojo.Hospitaluser">
+    <id column="u_phone" jdbcType="VARCHAR" property="u_phone" />
+    <result column="u_password" jdbcType="VARCHAR" property="u_password" />
+    <result column="u_truename" jdbcType="VARCHAR" property="u_truename" />
+    <result column="u_email" jdbcType="VARCHAR" property="u_email" />
+    <result column="u_state" jdbcType="INTEGER" property="u_state" />
+    <result column="u_rid" jdbcType="INTEGER" property="u_rid" />
+    <result column="is_del" jdbcType="INTEGER" property="is_del" />
+  </resultMap>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    u_phone, u_password, u_truename, u_email, u_state, u_rid, is_del
+  </sql>
+  <select id="selectByExample" parameterType="com.kkb.pojo.HospitaluserExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from hospitaluser
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from hospitaluser
+    where u_phone = #{u_phone,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from hospitaluser
+    where u_phone = #{u_phone,jdbcType=VARCHAR}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.kkb.pojo.HospitaluserExample">
+    delete from hospitaluser
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.kkb.pojo.Hospitaluser">
+    insert into hospitaluser (u_phone, u_password, u_truename, 
+      u_email, u_state, u_rid, 
+      is_del)
+    values (#{u_phone,jdbcType=VARCHAR}, #{u_password,jdbcType=VARCHAR}, #{u_truename,jdbcType=VARCHAR}, 
+      #{u_email,jdbcType=VARCHAR}, #{u_state,jdbcType=INTEGER}, #{u_rid,jdbcType=INTEGER}, 
+      #{is_del,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="com.kkb.pojo.Hospitaluser">
+    insert into hospitaluser
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="u_phone != null">
+        u_phone,
+      </if>
+      <if test="u_password != null">
+        u_password,
+      </if>
+      <if test="u_truename != null">
+        u_truename,
+      </if>
+      <if test="u_email != null">
+        u_email,
+      </if>
+      <if test="u_state != null">
+        u_state,
+      </if>
+      <if test="u_rid != null">
+        u_rid,
+      </if>
+      <if test="is_del != null">
+        is_del,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="u_phone != null">
+        #{u_phone,jdbcType=VARCHAR},
+      </if>
+      <if test="u_password != null">
+        #{u_password,jdbcType=VARCHAR},
+      </if>
+      <if test="u_truename != null">
+        #{u_truename,jdbcType=VARCHAR},
+      </if>
+      <if test="u_email != null">
+        #{u_email,jdbcType=VARCHAR},
+      </if>
+      <if test="u_state != null">
+        #{u_state,jdbcType=INTEGER},
+      </if>
+      <if test="u_rid != null">
+        #{u_rid,jdbcType=INTEGER},
+      </if>
+      <if test="is_del != null">
+        #{is_del,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.kkb.pojo.HospitaluserExample" resultType="java.lang.Long">
+    select count(*) from hospitaluser
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update hospitaluser
+    <set>
+      <if test="record.u_phone != null">
+        u_phone = #{record.u_phone,jdbcType=VARCHAR},
+      </if>
+      <if test="record.u_password != null">
+        u_password = #{record.u_password,jdbcType=VARCHAR},
+      </if>
+      <if test="record.u_truename != null">
+        u_truename = #{record.u_truename,jdbcType=VARCHAR},
+      </if>
+      <if test="record.u_email != null">
+        u_email = #{record.u_email,jdbcType=VARCHAR},
+      </if>
+      <if test="record.u_state != null">
+        u_state = #{record.u_state,jdbcType=INTEGER},
+      </if>
+      <if test="record.u_rid != null">
+        u_rid = #{record.u_rid,jdbcType=INTEGER},
+      </if>
+      <if test="record.is_del != null">
+        is_del = #{record.is_del,jdbcType=INTEGER},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update hospitaluser
+    set u_phone = #{record.u_phone,jdbcType=VARCHAR},
+      u_password = #{record.u_password,jdbcType=VARCHAR},
+      u_truename = #{record.u_truename,jdbcType=VARCHAR},
+      u_email = #{record.u_email,jdbcType=VARCHAR},
+      u_state = #{record.u_state,jdbcType=INTEGER},
+      u_rid = #{record.u_rid,jdbcType=INTEGER},
+      is_del = #{record.is_del,jdbcType=INTEGER}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.kkb.pojo.Hospitaluser">
+    update hospitaluser
+    <set>
+      <if test="u_password != null">
+        u_password = #{u_password,jdbcType=VARCHAR},
+      </if>
+      <if test="u_truename != null">
+        u_truename = #{u_truename,jdbcType=VARCHAR},
+      </if>
+      <if test="u_email != null">
+        u_email = #{u_email,jdbcType=VARCHAR},
+      </if>
+      <if test="u_state != null">
+        u_state = #{u_state,jdbcType=INTEGER},
+      </if>
+      <if test="u_rid != null">
+        u_rid = #{u_rid,jdbcType=INTEGER},
+      </if>
+      <if test="is_del != null">
+        is_del = #{is_del,jdbcType=INTEGER},
+      </if>
+    </set>
+    where u_phone = #{u_phone,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.kkb.pojo.Hospitaluser">
+    update hospitaluser
+    set u_password = #{u_password,jdbcType=VARCHAR},
+      u_truename = #{u_truename,jdbcType=VARCHAR},
+      u_email = #{u_email,jdbcType=VARCHAR},
+      u_state = #{u_state,jdbcType=INTEGER},
+      u_rid = #{u_rid,jdbcType=INTEGER},
+      is_del = #{is_del,jdbcType=INTEGER}
+    where u_phone = #{u_phone,jdbcType=VARCHAR}
+  </update>
+</mapper>

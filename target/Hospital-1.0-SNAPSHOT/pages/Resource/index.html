@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="/Css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="/Css/bootstrap-responsive.css"/>
+    <link rel="stylesheet" type="text/css" href="/Css/style.css"/>
+    <script type="text/javascript" src="/Js/jquery.js"></script>
+    <script type="text/javascript" src="/Js/jquery.sorted.js"></script>
+    <script type="text/javascript" src="/Js/bootstrap.js"></script>
+    <script type="text/javascript" src="/Js/ckform.js"></script>
+    <script type="text/javascript" src="/Js/common.js"></script>
+    <script src="/layer/layer.js"></script>
+    <script type="text/javascript" src="/layer/layer.js"></script>
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+    </style>
+    <script type="text/javascript">
+        $(function () {
+            $('#newNav').click(function () {
+                window.location.href = "add.html";
+            });
+        });
+
+        function checkall() {
+            var alls = document.getElementsByName("check");
+            var ch = document.getElementById("checkall");
+            if (ch.checked) {
+                for (var i = 0; i < alls.length; i++) {
+                    alls[i].checked = true;
+                }
+            } else {
+                for (var i = 0; i < alls.length; i++) {
+                    alls[i].checked = false;
+                }
+            }
+        }
+
+        function delAll() {
+            var alls = document.getElementsByName("check");
+            var ids = new Array();
+            for (var i = 0; i < alls.length; i++) {
+
+                if (alls[i].checked) {
+                    ids.push(alls[i].value);
+                }
+            }
+            if (ids.length > 0) {
+                deleteMenu(ids);
+            } else {
+                alert("请选中要删除的项~");
+            }
+        }
+
+        function changePage() {
+            let size = $("#selectPage").val();
+
+            if (size == -1) {
+                return;
+            }
+            $("#pageSize").val(size);
+            loadData();
+        }
+    </script>
+</head>
+<body>
+<form class="form-inline definewidth m20" id="myForm">
+    资源(菜单)名称：
+    <input type="hidden" name="pageNum" id="pageNum"/>
+    <input type="hidden" name="pageSize" id="pageSize"/>
+    <input type="text" name="mName" id="mName" class="abc input-default" placeholder="" value="">&nbsp;&nbsp;
+    <button type="button" class="btn btn-primary" id="queryByName" onclick="loadData()">查询</button>
+</form>
+<table class="table table-bordered table-hover definewidth m10">
+    <thead>
+    <tr>
+        <th width="5%"><input type="checkbox" id="checkall" onChange="checkall();"></th>
+        <th>资源名称</th>
+        <th>路径Url</th>
+        <th>是否有效</th>
+        <th width="10%">操作</th>
+    </tr>
+    </thead>
+    <tbody id="tbody">
+
+    </tbody>
+</table>
+<table class="table table-bordered table-hover definewidth m10">
+    <tr>
+        <th colspan="5">
+            <div class="inline pull-right page">
+                <!--<select id="selectPage" onchange="changePage()">
+                    <option value="-1">&#45;&#45;请选择每页展示条数&#45;&#45;</option>
+                    <option value="5">&#45;&#45;&#45;&#45;&#45;&#45;5条&#45;&#45;&#45;&#45;&#45;&#45;</option>
+                    <option value="10">&#45;&#45;&#45;&#45;&#45;&#45;10条&#45;&#45;&#45;&#45;&#45;&#45;</option>
+                    <option value="15">&#45;&#45;&#45;&#45;&#45;&#45;15条&#45;&#45;&#45;&#45;&#45;&#45;</option>
+                </select>-->
+                共 <span id="total"> </span> 条记录 <span id="currentPage"></span>/<span id="totalPage"></span> 页 &nbsp;
+                <a id="firstPage" style="cursor: pointer">首页</a>
+                <a id="prePage" style="cursor: pointer">上一页</a>
+                &nbsp;
+                <a id="singlePage">
+                </a>
+                <a id="singlePage2">
+                </a>
+                <a id="nextPage" style="cursor: pointer">下一页</a>
+                <a id="lastPage" style="cursor: pointer">尾页</a>
+            </div>
+            <div>
+                <button type="button" class="btn btn-success" id="newNav">添加资源</button>&nbsp;&nbsp;&nbsp;<button
+                    type="button" class="btn btn-success" id="delPro" onClick="delAll();">删除选中
+            </button>
+            </div>
+        </th>
+    </tr>
+</table>
+</body>
+</html>
+
+<script>
+    var pageNum = null;
+    var isFirstPage = null;
+    var isLastPage = null;
+    var pages = null;
+    $(function () {
+        loadData();
+
+        $("#firstPage").click(function () {
+            $("#pageNum").val(1);
+            loadData();
+        });
+
+        $("#prePage").click(function () {
+
+
+            if (isFirstPage) {
+                loadData();
+            } else {
+                $("#pageNum").val(pageNum - 1);
+                loadData();
+            }
+        });
+
+        $("#nextPage").click(function () {
+
+            if (isLastPage) {
+                $("#pageNum").val(pages);
+                loadData();
+            } else {
+                $("#pageNum").val(pageNum + 1);
+                loadData();
+            }
+
+        });
+
+        $("#lastPage").click(function () {
+
+            $("#pageNum").val(pages);
+            loadData();
+
+        });
+    });
+
+    //点击单页信息（1-5页）--start;
+    function pageNum1() {
+        $("#pageNum").val(1);
+        loadData();
+    }
+
+    function pageNum2() {
+        $("#pageNum").val(2);
+        loadData();
+    }
+
+    function pageNum3() {
+        $("#pageNum").val(3);
+        loadData();
+    }
+
+    function pageNum4() {
+        $("#pageNum").val(4);
+        loadData();
+    }
+
+    function pageNum5() {
+        $("#pageNum").val(5);
+        loadData();
+    }
+
+    //点击单页信息（1-5页）--end;
+
+    <!--获取分页信息-->
+    function pageData(data) {
+        pageNum = data.pageNum;
+        isFirstPage = data.isFirstPage;
+        isLastPage = data.isLastPage;
+        pages = data.pages;
+    }
+
+
+    //跳转编辑页面
+    function toEdit(id) {
+        window.location.href = "/pages/Resource/edit.html?mid=" + id;
+    }
+
+    //根据id删除菜单
+    function deleteMenu(id) {
+        if (confirm("确定要删除吗?")) {
+            $.ajax({
+                type: "POST",
+                url: "/menu/" + id,
+                data: "&_method=DELETE",
+                dataType: "json",
+                success: function (data) {
+                    if (data.code == 200) {
+                        alert("删除成功！");
+                        // layer.msg("删除成功！", {icon: 1});
+                        setTimeout(function () {
+
+                            location.reload();
+                        }, 2000)
+                    } else {
+                        alert("删除失败！");
+                    }
+                }
+            });
+        }
+    }
+
+    <!-- 加载菜单资源列表 -->
+    function loadData() {
+        $.ajax({
+            type: "GET",
+            url: "/menu/list",
+            data: $("#myForm").serialize(),
+            dataType: "json",
+            success: function (data) {
+                let str = "";
+                let str2 = "";
+                let list = data.pageInfo.list;
+                if (data.code == 200) {
+                    for (let i = 0; i < list.length; i++) {
+                        str += '<tr>' +
+                            '<td style="vertical-align:middle;">' + '<input type="checkbox" name="check" value="' + list[i].mId + '" />' + '</td>' +
+                            '<td>' + list[i].mName + '</td>' +
+                            '<td>' + list[i].mUrl + '</td>' +
+                            '<td>' + (list[i].mState == 0 ? "有效" : "禁用") + '</td>' +
+                            '<td>' + '<a style="cursor: pointer" onclick="toEdit(' + list[i].mId + ')">编辑</a>' + '&nbsp;&nbsp;' + '<a style="cursor: pointer"  onclick="deleteMenu(' + list[i].mId + ')">删除</a>' + '</td>' +
+                            '<tr>'
+                    }
+                    $("#tbody").html(str);
+                    //总记录数
+                    $("#total").html(data.pageInfo.total);
+                    //当前页数
+                    $("#currentPage").html(data.pageInfo.pageNum);
+                    //总页数
+                    let totalPage = Math.ceil(data.pageInfo.total / data.pageInfo.pageSize);
+                    $("#totalPage").html(totalPage);
+                    //将数据分页传入对应函数中
+                    pageData(data.pageInfo);
+                    let length = totalPage > 5 ? 5 : totalPage;
+                    //根据页数对数据做相应展示
+                    for (let i = 0; i < length; i++) {
+                        str2 += '<span style="cursor: pointer"  id="pageNum' + (i + 1) + '()"  onclick="pageNum' + (i + 1) + '()">' + (i + 1) + '</span>' + '&nbsp;&nbsp;&nbsp;'
+                    }
+
+                    $("#singlePage").html(str2);
+
+                    if (totalPage > 5) {
+                        $("#singlePage2").html("....");
+                    }
+
+                } else {
+                    alert("未查询到数据~");
+                }
+            }
+        })
+    }
+</script>

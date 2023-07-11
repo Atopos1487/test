@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>添加收费项目--中软高科-2015</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap-responsive.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/style.css" />
+    <script type="text/javascript" src="../../Js/jquery.js"></script>
+    <script type="text/javascript" src="../Js/jquery.sorted.js"></script>
+    <script type="text/javascript" src="../../Js/bootstrap.js"></script>
+    <script type="text/javascript" src="../../Js/ckform.js"></script>
+    <script type="text/javascript" src="../../Js/common.js"></script>
+    <script type="text/javascript" src="../../Js/ckeditor/ckeditor.js"></script>
+    <script src="jquery.autocomplete.js" type="text/javascript"><!--mce:1--></script>
+ 
+
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+
+
+    </style>
+    <script type="text/javascript">
+    $(function () {       
+		$('#backid').click(function(){
+				window.location.href="charge2.html";
+		 });
+    });
+    </script>
+</head>
+<body>
+<form id="myForm"  class="definewidth m20">
+<table class="table table-bordered table-hover definewidth m10">
+    <tr>
+        <td width="10%" class="tableleft">病历号</td>
+        <td><input type="text" name="p_id"  disabled/></td>
+    </tr>
+    <tr>
+        <td width="10%" class="tableleft">姓名</td>
+        <td><input type="text" name="p_name" disabled /></td>
+    </tr>
+
+    <tr>
+        <td width="10%" class="tableleft">收费项目</td>
+        <td><input  type="text" name="chap_name" id="chap_name" list="ide" value=""/>输入自动匹配出来</td>
+                <span id="error" >查无次收费项</span>
+        <datalist id="ide">
+            <option value="肝常规" />
+            <option value="尿常规" />
+            <option value="肾大亏" />
+            <option value="常规" />
+            <option value="b超" />
+            <option value="无痛人流 " />
+            <option value="肝功能" />
+        </datalist>
+    </tr>
+    <tr>
+        <td width="10%" class="tableleft">收费金额</td>
+        <td><input type="text" id="chap_money" name="chap_money"   disabled /></td>
+    </tr>
+    <tr>
+        <td colspan="2">
+			<center>
+				<button id="btnUpdate" class="btn btn-primary" type="button">保存</button> &nbsp;
+                &nbsp;<button type="button" class="btn btn-success" name="backid" id="backid">返回列表</button>
+			</center>
+		</td>
+    </tr>
+</table>
+</form>
+</body>
+</html>
+
+<script>
+    String.prototype.GetValue= function(para) {
+        let reg = new RegExp("(^|&)"+ para +"=([^&]*)(&|$)");
+        let r = this.substr(this.indexOf("\?")+1).match(reg);
+        if (r!=null) return unescape(r[2]); return null;
+    }
+    $(function () {
+        //根据地址获取chap_id,如果null则执行增加，否则执行更新
+        let url = document.location.toString();//获取URL
+
+        let beh_id=url.GetValue("p_id");
+        let queryId=url.GetValue("queryId");
+        let queryName=url.GetValue("queryName");
+
+        let pageNum=url.GetValue("pageNum");
+        let pageSize=url.GetValue("pageSize");
+        let chap_id;
+
+        $("#error").hide();
+
+        //根据id查询要更新的信息并回显到页面
+        queryById(beh_id);
+
+
+        function queryById(beh_id) {
+            $.ajax({
+                type: "GET",
+                url: "/charge2/"+beh_id, //RESTful风格的API定义
+                data: "",
+                success: function (vo) {
+                    let obj=vo.obj;
+                    let p_id=obj.p_id;
+                    let p_name=obj.p_name;
+
+                    $("input[name='p_id']").val(p_id);
+                    $("input[name='p_name']").val(p_name);
+
+                }
+            });
+        }
+
+
+        //点击（ 收费项目框 ）自动填充 （ 收费价格 ）
+        $("#chap_name").blur(function (){
+            $.ajax({
+                type: "GET",
+               // async:false,
+                url: "/charge/name",
+                data: "chap_name=" + $("#chap_name").val(),
+                dataType:"json",
+                success: function (vo) {
+                    if(vo.code === 200){
+                        $("#error").hide();
+                        chap_id = vo.obj.chap_id;
+                        $("#chap_money").val(vo.obj.chap_money );
+                    }else{
+                        $("#error").show();
+                        $("#chap_money").val("");
+                    }
+                }
+            });
+        });
+
+
+//保存按钮的单击事件--实现真正的更新  自动检测 是否隶属于该 （chargeproject）表
+        $("#btnUpdate").click(function () {
+            if($("#chap_money").val() == ""){
+                alert("请输入正确的收费项目！")
+            }
+            //更新时传入 beh_id 和 chap_id 去添加到第三方表中
+            else {
+                $.ajax({
+                    type: "POST",//这里必须写POST  resultful风格的要求；
+                   // async:false,
+                    url: "/charge/beh",
+                    data: "beh_id=" + beh_id + "&chap_id=" + chap_id,
+                    dataType: "json",
+                    success: function (vo) {
+                        if (vo.code == 200) {
+                            window.location.href = "/pages/hospital/charge2.html?";
+                            // "pageNum="+pageNum+"&pageSize="+pageSize
+                        } else {
+                            alert("更新失败！" + vo.msg);
+                        }
+                    }
+                });
+            }
+        });
+    });
+
+
+</script>
+
+
+

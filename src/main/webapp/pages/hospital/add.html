@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>录入住院信息--中软高科-2015</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap-responsive.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/style.css" />
+    <script type="text/javascript" src="../../Js/jquery-1.11.1.js"></script>
+    <script type="text/javascript" src="../../Js/layer/layer.js"/>
+    <script type="text/javascript" src="../../Js/bootstrap.js"></script>
+    <script type="text/javascript" src="../../Js/ckform.js"></script>
+    <script type="text/javascript" src="../../Js/common.js"></script>
+    <script type="text/javascript" src="../../Js/ckeditor/ckeditor.js"></script>
+
+
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+
+        #tips{
+            width: 210px;
+            margin-top: 44px;
+            margin-left: 140px;
+            position: absolute;
+            text-align: left;
+            border: 1px solid #999;
+            display: none;
+        }
+
+        .hover{
+            background-color: grey;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+    <script type="text/javascript">
+        $(function () {
+            $('#backid').click(function(){
+                window.location.href="index.html";
+            });
+        });
+    </script>
+</head>
+<body>
+<form id="myForm" class="definewidth m20">
+    <table class="table table-bordered table-hover definewidth m10">
+        <tr>
+            <td width="10%" class="tableleft">病历号</td>
+            <td><input type="text" id="hrId" name="hosr_id" autocomplete="off"/></td>
+            <div id="tips">
+
+            </div>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">姓名</td>
+            <td><input type="text" name="hrName"></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">证件类型</td>
+            <td>身份证</td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">证件号</td>
+            <td><input name="hrCardId" type="text"></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">社保号</td>
+            <td><input type="text" name="hrMedical"></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">联系电话</td>
+            <td><input type="text" name="hrPhone"></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">是否自费</td>
+            <td id="hrSelfPrice">
+
+            </td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">性别</td>
+            <td id="gender">
+
+            </td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">年龄</td>
+            <td><input name="hrAge" type="text"></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">初复诊</td>
+            <td id="hrLookDoctor">
+
+            </td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">所挂科室</td>
+            <td id="office">
+                <select name="beh_dep" id="beh_dep" readonly="">
+                    <option value=""></option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">指定医生</td>
+            <td>
+                <select name="d_id" id="d_id" readonly="">
+                    <option value=""></option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">备注</td>
+            <td><textarea id="remark" name="remark"></textarea></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">护理</td>
+            <td><input type="text" name="beh_nursePeople"/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">床位号</td>
+            <td><input type="text" name="beh_patbed"/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">缴费押金</td>
+            <td><input type="text" name="beh_antecedent"/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">病情</td>
+            <td><textarea name="beh_illness"></textarea></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <center>
+                    <button class="btn btn-primary" type="button" id="btnAdd">保存</button> &nbsp;&nbsp;
+                    <button type="button" class="btn btn-success" name="backid" id="backid">返回列表</button>
+                </center>
+            </td>
+        </tr>
+    </table>
+</form>
+</body>
+</html>
+<script type="text/javascript">
+
+    var bedFlag = false;
+    <!--验证姓名-->
+    function checkBhNursePeople(){
+        var bhNursePeople = $("input[name='beh_nursePeople']").val();
+        var reg = /^[\u0391-\uFFE5]{2,4}$/;
+        if (bhNursePeople==null ||bhNursePeople=="" || bhNursePeople.length==0) {
+            layer.msg("护理姓名不能为空");
+            return false;
+        }else{
+            if(reg.test(bhNursePeople)){
+                layer.msg("护理姓名有效");
+                return true;
+            }
+            layer.msg("护理姓名为2-4个中文字符")
+            return false;
+        }
+    };
+
+    <!--验证床位号-->
+    function checkBhBed(){
+        <!--模拟验证病床号，前5位是数字，最后一位为F或f-->
+        var reg = /(^\d{5}(\d|F|f)$)/;
+        var bhPatBed = $("input[name='beh_patbed']").val();
+        if (bhPatBed==null || bhPatBed==""){
+            layer.msg("床位号不能为空");
+            bedFlag = false;
+            return;
+        }else{
+            if (reg.test(bhPatBed)){
+                <!--查看数据库中是否已存在该身份证号-->
+                $.ajax({
+                    type: 'GET',
+                    url: '/beHospital/bed/'+bhPatBed,
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.code==200){
+                            layer.msg("输入有效");
+                            bedFlag = true;
+                            return;
+                        }else {
+                            $("input[name='bhPatBed']").val("");
+                            layer.msg("该床位号已有人在使用,请重新输入");
+                            bedFlag = false;
+                            return;
+
+                        }
+                    }
+                });
+            } else {
+                layer.msg("无效,长度为6，且为数字,最后一位可以是F/f");
+                cardId = false;
+            }
+        }
+
+
+    };
+
+
+
+
+    $(function () {
+
+        //自动补全
+        $("input[name='hosr_id']").keyup(
+            function () {
+                var text = $(this).val();
+                if (text==null || text==""){
+                    $("#tips").css("display","none");
+                    return
+                } else{
+                    $.ajax({
+                        type:'GET',
+                        url:'/beHospital/hrIdLike/'+text,
+                        dataType:'json',
+                        success:function (vo) {
+                            var list=vo.list;
+                            if (list==null){
+                                return
+                            } else{
+
+                                var str='';
+                                for (var i =0;i<list.length;i++){
+                                    str+='<div class="list_link">'+list[i]+'</div>'
+                                }
+                                $("#tips").html(str).show();
+
+                                $(".list_link").hover(
+                                    function () {
+                                        $(this).addClass("hover");
+                                    },
+                                    function () {
+                                        $(this).removeClass("hover");
+                                    }
+
+                                );
+
+                                $(".list_link").click(function () {
+                                    $("input[name='hosr_id']").val($(this).html());
+                                    $("#tips").html("").hide();
+                                });
+                            }
+                        }
+                    })
+
+                }
+            }
+        );
+
+        //按回车键查询病者信息
+        $("input[name='hosr_id']").keydown(function (e) {
+            var hrId = $(this).val();
+            if (e.keyCode==13){
+                $.ajax({
+                    type: "GET",
+                    url: "/beHospital/hrId/"+hrId,
+                    dataType:"json",
+                    success: function(vo){
+                        //alert( "Data Saved: " + vo );
+                        var obj=vo.obj;
+                        var hrName=obj.hosr_name;
+                        var doctorName=obj.doctor.d_name;
+                        var doctorId = obj.doctor.d_id;
+                        var officeName=obj.department.dep_name;
+                        var officeId = obj.department.dep_id;
+                        var cardId = obj.hosr_idCar;
+                        var hrRegprice = obj.hosr_regPrice;
+                        var hrPhone = obj.hosr_phone;
+                        var hrMedical = obj.hosr_medical;
+                        var hrSelfPrice =obj.hosr_selfPrice;
+                        var hrGender = obj.hosr_sex;
+                        var hrAge = obj.hosr_age;
+                        var hrWork = obj.hosr_work;
+                        var hrLookDoctor = obj.hosr_lookDoctor;
+                        var remark = obj.hosr_remark;
+
+                        $("input[name='hrName']").val(hrName);
+                        $("input[name='hrCardId']").val(cardId);
+                        $("input[name='hrRegPrice']").val(hrRegprice);
+                        $("input[name='hrMedical']").val(hrMedical);
+                        $("input[name='hrPhone']").val(hrPhone);
+                        $("input[name='hrAge']").val(hrAge);
+                        $("input[name='hrWork']").val(hrWork);
+                        $("#remark").val(remark);
+                        var gstr='';
+                        var selfStr='';
+                        var ldStr='';
+                        if (hrGender==0){
+                            var gstr='<input type="radio" name="hrGender" value="0" checked/>男&nbsp;&nbsp;&nbsp;\n' +
+                                '            <input type="radio" name="hrGender" value="1"/>女';
+                            $("#gender").html(gstr);
+                        }else if (hrGender==1) {
+                            var gstr='<input type="radio" name="hrGender" value="0" />男&nbsp;&nbsp;&nbsp;\n' +
+                                '            <input type="radio" name="hrGender" value="1" checked/>女';
+                            $("#gender").html(gstr);
+                        }
+
+                        if (hrSelfPrice==0){
+                            selfStr='<input type="radio" name="hrSelfPrice" value="0" checked/>否&nbsp;&nbsp;&nbsp;\n' +
+                                '            <input type="radio" name="hrSelfPrice" value="1"/>是';
+                            $("#hrSelfPrice").html(selfStr);
+                        }else if (hrSelfPrice==1){
+                            selfStr='<input type="radio" name="hrSelfPrice" value="0" />否&nbsp;&nbsp;&nbsp;\n' +
+                                '            <input type="radio" name="hrSelfPrice" value="1" checked/>是';
+                            $("#hrSelfPrice").html(selfStr);
+                        }
+
+                        if (hrLookDoctor==0){
+                            ldStr='<input type="radio" name="hrLookDoctor" value="0" checked/>初诊&nbsp;&nbsp;&nbsp;\n' +
+                                '            <input type="radio" name="hrLookDoctor" value="1"/>复诊';
+                            $("#hrLookDoctor").html(ldStr);
+                        }else if (hrLookDoctor==1){
+                            ldStr='<input type="radio" name="hrLookDoctor" value="0" />初诊&nbsp;&nbsp;&nbsp;\n' +
+                                '            <input type="radio" name="hrLookDoctor" value="1" checked/>复诊';
+                            $("#hrLookDoctor").html(ldStr);
+                        }
+
+                        var str = '<option  value="' + officeId + '">' + officeName + '</option>'
+                        var str2 = '<option  value=' + doctorId +'>' + doctorName + '</option>'
+                        $("#beh_dep").html(str);
+                        $("#d_id").html(str2);
+
+
+                    }
+                });
+
+
+            }
+        });
+
+
+        $("input[name='beh_nursePeople']").blur(function () {
+            checkBhNursePeople();
+        });
+
+        $("input[name='beh_patbed']").blur(function () {
+            checkBhBed();
+        });
+
+
+        //提交按钮的单击事件
+        $("#btnAdd").click(function () {
+            var loadB = layer.load();
+            var flagN = checkBhNursePeople();
+            //提交住院信息
+            if (flagN&&bedFlag){
+                $.ajax({
+                    type: "POST",
+                    url: "/beHospital/",
+                    data: $("#myForm").serialize(),
+                    dataType:"json",
+                    success: function(vo){
+                        layer.close(loadB);
+                        if(vo.code==200) {
+                            layer.msg("添加住院成功");
+                            window.location.href = "/pages/hospital/index.html";
+                        }else{
+                            layer.msg(vo.msg);
+                        }
+                    }
+                });
+            } else {
+                return;
+            }
+
+        });
+    });
+
+</script>

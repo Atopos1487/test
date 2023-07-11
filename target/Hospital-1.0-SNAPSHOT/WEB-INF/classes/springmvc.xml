@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context.xsd
+http://www.springframework.org/schema/mvc
+http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+    <!--springmvc的配置文件:控制器的bean对象都在这里扫描-->
+    <context:component-scan base-package="com.kkb.controller"/>
+    <mvc:annotation-driven/>
+    <!--视图解析器-->
+    <!--静态资源处理-->
+    <bean id="internalResourceViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/pages/"/>
+        <property name="suffix" value=".html"/>
+    </bean>
+    <!--静态资源处理-->
+    <mvc:resources mapping="/assets/**" location="/assets/"/>
+    <mvc:resources mapping="/Css/**" location="/Css/"/>
+    <mvc:resources mapping="/front/**" location="/front/"/>
+    <mvc:resources mapping="/pages/**" location="/pages/"/>
+    <mvc:resources mapping="/Images/**" location="/Images/"/>
+    <mvc:resources mapping="/Js/**" location="/Js/"/>
+    <mvc:resources mapping="/img/**" location="/img/"/>
+    <mvc:resources mapping="/layer/**" location="/layer/"/>
+<!--    <mvc:resources mapping="/registration/**" location="/registration/"/>
+    <mvc:resources mapping="/Resource/**" location="/Resource/"/>
+    <mvc:resources mapping="/Role/**" location="/Role/"/>
+    <mvc:resources mapping="/User/**" location="/User/"/>
+    <mvc:resources mapping="/hospital/**" location="/hospital/"/>
+    <mvc:resources mapping="/doctor/**" location="/doctor/"/>-->
+    <!--文件上传-->
+    <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+    </bean>
+
+    <!--   开启默认servlet，在web.xml中设置静态资源不拦截-->
+    <mvc:default-servlet-handler/>
+
+    <!--配置拦截器  -->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <!-- 拦截所有mvc控制器 -->
+            <mvc:mapping path="/**"/>
+            <bean class="com.kkb.filter.LoginIntercepter"></bean>
+        </mvc:interceptor>
+    </mvc:interceptors>
+</beans>

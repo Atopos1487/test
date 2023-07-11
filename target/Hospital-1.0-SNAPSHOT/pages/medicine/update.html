@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>添加药品--中软高科-2015</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap-responsive.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/style.css" />
+    <script type="text/javascript" src="../../Js/jquery.js"></script>
+    <script type="text/javascript" src="../../Js/bootstrap.js"></script>
+    <script type="text/javascript" src="../../Js/ckform.js"></script>
+    <script type="text/javascript" src="../../Js/common.js"></script>
+    <script type="text/javascript" src="../../Js/ckeditor/ckeditor.js"></script>
+
+
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+
+
+    </style>
+    <script type="text/javascript">
+        $(function () {
+            $('#backid').click(function(){
+                window.location.href="index.html";
+            });
+        });
+    </script>
+</head>
+<body>
+<form id="myForm" class="definewidth m20">
+    <table class="table table-bordered table-hover definewidth m10">
+        <tr>
+            <td width="10%" class="tableleft">药品编号</td>
+            <td><input type="text" name="dr_id" value=""/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">进价</td>
+            <td><input type="text" name="dr_inprice" value=""/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">售价</td>
+            <td><input type="text" name="dr_outprice" value=""/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">药品名称</td>
+            <td><input type="text" name="dr_name" value=""/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">药品类型</td>
+            <td> <select name="dr_type">
+                <option value="中药">中药</option>
+                <option value="西药">西药</option>
+                <option value="处方药">处方药</option>
+                <option value="非处方药">非处方药</option>
+            </select>
+            </td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">简单描述</td>
+            <td><input type="text" name="dr_simdesc" value=""/></td>
+        </tr>
+
+        <tr>
+            <td width="10%" class="tableleft">保质期</td>
+            <td><input type="text" name="dr_" value="36"/>月</td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">详细描述</td>
+            <td><textarea name="dr_datadesc"></textarea></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">生产厂商</td>
+            <td><input type="text" name="dr_factory" value="36"/>月</td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">服用说明</td>
+            <td><input type="text" name="dr_direction" value=""/></td>
+        </tr>
+
+        <tr>
+            <td width="10%" class="tableleft">备注</td>
+            <td><textarea name="dr_remarking"></textarea></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <center>
+                    <button type="button" class="btn btn-primary" id="updateBtn">保存</button> &nbsp;&nbsp;<button type="button" class="btn btn-success" name="backid" id="backid">返回列表</button>
+                </center>
+            </td>
+        </tr>
+    </table>
+</form>
+</body>
+</html>
+<script>
+    String.prototype.GetValue= function(para) {
+        let reg = new RegExp("(^|&)"+ para +"=([^&]*)(&|$)");
+        let r = this.substr(this.indexOf("\?")+1).match(reg);
+        if (r!=null) return unescape(r[2]); return null;
+    }
+    $(function () {
+        //根据地址获取teamId,如果null则执行增加，否则执行更新
+        let url = document.location.toString();//获取URL
+        let dr_id=url.GetValue("dr_id");
+        let pageNum=url.GetValue("pageNum");
+        let pageSize=url.GetValue("pageSize");
+        //alert(teamId);
+        //根据id查询要更新的球队信息并回显到页面
+        queryById(dr_id);
+        //提交按钮的单击事件--实现真正的更新
+        $("#updateBtn").click(function () {
+            $.ajax({
+                type: "POST",//这里必须写POST
+                url: "/medicine/"+dr_id,
+                data: $("#myForm").serialize()+"&_method=PUT",
+                dataType:"json",
+                success: function(vo){
+                    if(vo.code==200) {
+                        window.location.href = "/pages/medicine/index.html?pageNum="+pageNum+"&pageSize="+pageSize;
+                    }else{
+                        alert("更新失败！"+vo.msg);
+                    }
+                }
+            });
+        });
+    });
+    function queryById(dr_id) {
+        $.ajax({
+            type: "GET",
+            url: "/medicine/"+dr_id, //RESTful风格的API定义
+            data: "",
+            success: function (vo) {
+                let obj = vo.obj;
+                if (obj != null) {
+                    let dr_id = obj.dr_id == null ? "" : obj.dr_id;
+                    let dr_inprice = obj.dr_inprice == null ? "" : obj.dr_inprice;
+                    let dr_outprice = obj.dr_outprice == null ? "" : obj.dr_outprice;
+                    let dr_name = obj.dr_name == null ? "" : obj.dr_name;
+                    let dr_type = obj.dr_type == null ? "" : obj.dr_type;
+                    let dr_simdesc = obj.dr_simdesc == null ? "" : obj.dr_simdesc;
+                    let dr_ = obj.dr_ == null ? "" : obj.dr_;
+                    let dr_datadesc = obj.dr_datadesc == null ? "" : obj.dr_datadesc;
+                    let dr_direction = obj.dr_direction == null ? "" : obj.dr_direction;
+                    let dr_number = obj.dr_number == null ? "" : obj.dr_number;
+                    let dr_remark = obj.dr_remark == null ? "" : obj.dr_remark;
+                    let dr_factory = obj.dr_factory == null ? "" : obj.dr_factory;
+                    $("input[name='dr_id']").val(dr_id);
+                    $("input[name='dr_inprice']").val(dr_inprice);
+                    $("input[name='dr_outprice']").val(dr_outprice);
+                    $("input[name='dr_name']").val(dr_name);
+                    $("select[name='dr_type']").val(dr_type);
+                    $("input[name='dr_simdesc']").val(dr_simdesc);
+                    $("input[name='dr_']").val(dr_);
+                    $("input[name='dr_datadesc']").val(dr_datadesc);
+                    $("input[name='dr_direction']").val(dr_direction);
+                    $("input[name='dr_remark']").val(dr_remark);
+                    $("input[name='dr_factory']").val(dr_factory);
+                    $("input[name='dr_number']").val(dr_number);
+
+           /*         $("#dr_id").html(dr_id);
+                    $("#dr_inprice").html(dr_inprice);
+                    $("#dr_outprice").html(dr_outprice);
+                    $("#dr_name").html(dr_name);
+                    $("#dr_type").html(dr_type);
+                    $("#dr_simdesc").html(dr_simdesc);
+                    $("#dr_").html(dr_);
+                    $("#dr_datadesc").html(dr_datadesc);
+                    $("#dr_direction").html(dr_direction);
+                    $("#dr_remark").html(dr_remark);
+                    $("#dr_factory").html(dr_factory);
+                    $("#dr_number").html(dr_number);*/
+                }
+            }
+        });
+    }
+
+</script>

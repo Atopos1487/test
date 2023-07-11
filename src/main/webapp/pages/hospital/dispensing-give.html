@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>发药--中软高科-2015</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap-responsive.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/style.css" />
+    <script type="text/javascript" src="../../Js/jquery.js"></script>
+    <script type="text/javascript" src="../../Js/bootstrap.js"></script>
+    <script type="text/javascript" src="../../Js/ckform.js"></script>
+    <script type="text/javascript" src="../../Js/common.js"></script>
+    <script type="text/javascript" src="../../Js/ckeditor/ckeditor.js"></script>
+
+
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+
+
+    </style>
+    <script type="text/javascript">
+        $(function () {
+            $('#backid').click(function(){
+                window.location.href="dispensing.html";
+            });
+        });
+    </script>
+</head>
+<body>
+<form id="myForm"  class="definewidth m20">
+    <table class="table table-bordered table-hover definewidth m10">
+        <tr>
+            <td width="10%" class="tableleft">病历号</td>
+            <td name="peopleid"></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">姓名</td>
+            <td name="beh_name"></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">药品名称</td>
+            <td name="drugs"><select name="drugs"><option>2304-九九感冒药</option></select></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">发药数量</td>
+            <td><input type="text" name="number" value=""/></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <center>
+                    <button type="button" class="btn btn-primary" onclick="giveDrug()">保存</button> &nbsp;&nbsp;<button type="button" class="btn btn-success" name="backid" id="backid">返回列表</button>
+                </center>
+            </td>
+        </tr>
+    </table>
+</form>
+
+<script>
+    $(function () {
+        String.prototype.GetValue= function(para) {
+            let reg = new RegExp("(^|&)"+ para +"=([^&]*)(&|$)");
+            let r = this.substr(this.indexOf("\?")+1).match(reg);
+            if (r!=null) return unescape(r[2]); return null;
+        }
+        let url = document.location.toString();//获取URL
+        let peopleid=url.GetValue("peopleid");
+        let pageNum=url.GetValue("pageNum");
+        let pageSize=url.GetValue("pageSize");
+        queryById(peopleid);
+    })
+    function queryById(peopleid) {
+        $.ajax({
+            type: "GET",
+            url: "/dispensing/"+peopleid, //RESTful风格的API定义
+            data: "",
+            success: function (vo) {
+                let obj=vo.obj;
+                let peopleid=obj.peopleid;
+                let beh_name=obj.beh_name==null?'':obj.beh_name;
+                let drugs=obj.drugs==null?'':obj.drugs;
+                let str="";
+                str+='<select name="drugs">'
+                for(let i=0;i<drugs.length;i++){
+                    str+='<option value="+'+drugs[i].dr_id+'+">'+drugs[i].dr_name+'</option>'
+                }
+                str+='</select>'
+                $("td[name='peopleid']").html(peopleid);
+                $("td[name='beh_name']").html(beh_name);
+                $("td[name='drugs']").html(str);
+            }
+        });
+    }
+
+    function giveDrug() {
+        let url = document.location.toString();//获取URL
+        let peopleid=url.GetValue("peopleid");
+        alert(peopleid);
+        let dr_id = $("select[name='drugs']").val();
+        let number = $("input[name='number']").val();
+        $.ajax({
+            type: "POST",
+            url: "/dispensing/give/"+peopleid, //RESTful风格的API定义
+            data: "dr_id="+dr_id+"&number="+number+"&_method=PUT",
+            success: function (vo) {
+                if (vo.code==200){
+                    alert("添加成功");
+                }else {
+                    alert("添加失败！"+vo.msg);
+                }
+            }
+        });
+    }
+
+</script>
+</body>
+</html>

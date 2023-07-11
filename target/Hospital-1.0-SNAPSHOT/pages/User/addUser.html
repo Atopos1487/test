@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="/Css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="/Css/bootstrap-responsive.css"/>
+    <link rel="stylesheet" type="text/css" href="/Css/style.css"/>
+    <script type="text/javascript" src="/Js/jquery.js"></script>
+    <script type="text/javascript" src="/Js/jquery.sorted.js"></script>
+    <script type="text/javascript" src="/Js/bootstrap.js"></script>
+    <script type="text/javascript" src="/Js/ckform.js"></script>
+    <script type="text/javascript" src="/Js/common.js"></script>
+    <script type="text/javascript" src="/layer/layer.js"></script>
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+    </style>
+    <script>
+        //登录名校验标志
+        var flagLoginname = false;
+        //真实姓名非空校验标志
+        var flagTruename = false;
+        //邮箱标志
+        var flagEmail = false;
+        //密码强度
+        var flagPass = false;
+        //角色
+        var flagRole = false;
+
+        $(function () {
+            $('#backid').click(function () {
+                window.location.href = "index.html";
+            });
+            roleInfo();
+        });
+
+        //登录名校验
+        function chenkLoginname() {
+            var uLoginname = $("#uLoginname").val();
+
+            if ($.trim(uLoginname) == null || $.trim(uLoginname) == "") {
+                $("#cLoginName").html(" 登录名不能为空！").css("color", "red");
+                flag = 1;
+            } else {
+                //唯一性校验
+                $.ajax({
+                    type: "GET",
+                    url: "/user/name/" + $.trim(uLoginname),
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.code == 200) {
+                            $("#cLoginName").html(" 已存在重复登录名，请重新输入！").css("color", "red");
+                            flagLoginname = false;
+                        } else {
+                            $("#cLoginName").html(" ").css("color", "green");
+                            flagLoginname = true;
+                        }
+                    }
+                })
+            }
+        }
+
+        //真实姓名非空校验
+        function checkTruename() {
+            var uTruename = $("#uTruename").val();
+            if ($.trim(uTruename) == null || $.trim(uTruename) == "") {
+                $("#cTrueName").html(" 真实姓名不能为空！").css("color", "red");
+                flagTruename = false;
+            } else {
+                $("#cTrueName").html(" ").css("color", "green");
+                flagTruename = true;
+            }
+        }
+
+        //邮箱验证
+        function checkEmail() {
+            var email = $("#uEmail").val();
+            var reg = /^\w+((-\w+)|(\.\w+))*\@[A-Za-z0-9]+((\.|-)[A-Za-z0-9]+)*\.[A-Za-z0-9]+$/;
+            if ($.trim(email) == null || $.trim(email) == "") {
+                $("#cEmail").html(" 邮箱信息不能为空！").css("color", "red");
+                flagEmail = false;
+            } else if (!reg.test(email)) {
+                $("#cEmail").html(" 邮箱格式不正确！").css("color", "red");
+                flagEmail = false;
+            } else {
+                $("#cEmail").html(" ").css("color", "green");
+                flagEmail = true;
+            }
+        }
+
+        //密码强度
+        function checkPass() {
+            var uPassword = $("#uPassword").val();
+            //passStrength
+            //获取密码强度
+            var strength = getPasswordStrength(uPassword);
+
+            if (strength < 3) {
+                $("#passStrength").html(" 密码强度较弱~").css("color", "red");
+                flagPass = false;
+            } else if (strength > 3 && strength < 5) {
+                $("#passStrength").html(" 密码强度一般~").css("color", "orange");
+                flagPass = true;
+            } else {
+                $("#passStrength").html(" 密码强度强~").css("color", "green");
+                flagPass = true;
+            }
+        }
+
+        //密码强度函数
+        function getPasswordStrength(password) {
+            var strength = 0;
+            $([/.{6,}/, /[0-9]+/, /[a-z]+/, /[A-Z]+/, /[^0-9a-zA-Z]+/]).each(function (i, o) {
+                console.log(i, o, strength);
+                if (o.test(password)) strength++;
+            });
+            return strength;
+        }
+
+        //用户编辑界面获取所有的角色信息
+        function roleInfo() {
+            $.ajax({
+                type: "GET",
+                url: "/user/roleList",
+                datatype: "json",
+                success: function (data) {
+                    let str = '<option value="' + (-1) + '">' + '--请选择--' + '</option>';
+                    if (data.code == 200) {
+                        let roles = data.pageInfo.list;
+                        for (let i = 0; i < roles.length; i++) {
+                            str += '<option value="' + roles[i].rId + '">' + roles[i].rName + '</option>'
+                        }
+                        $("#role").html(str);
+                    }
+                }
+            })
+        }
+
+        //添加用户信息
+        function addUser() {
+            var rid = $("#role").val();
+
+            if (rid == -1) {
+                flagRole = false;
+            } else {
+                flagRole = true;
+            }
+
+            if (flagLoginname && flagTruename && flagEmail && flagPass && flagRole) {
+                $.ajax({
+                    type: "POST",
+                    url: "/user/",
+                    data: $("#myForm").serialize(),
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.code == 200) {
+                            alert("添加成功~");
+                            // layer.msg("添加成功", {icon: 1});
+                            setTimeout(function () {
+                                window.location.href = "/pages/User/index.html";
+                            }, 2000);
+                        }
+                    }
+                })
+            } else {
+                alert("存在错误信息，无法添加！");
+                // layer.msg("存在错误信息，无法添加！", {icon: 2});
+                return;
+            }
+        }
+    </script>
+</head>
+<body>
+<form id="myForm" class="definewidth m20">
+    <table class="table table-bordered table-hover definewidth m10">
+        <tr>
+            <td width="10%" class="tableleft">登录名</td>
+            <td><input type="text" name="uLoginname" id="uLoginname" placeholder="请输入登录名" onblur="chenkLoginname()"/>
+                <span id="cLoginName"></span>
+            </td>
+        </tr>
+        <tr>
+            <td class="tableleft">密码</td>
+            <td><input type="password" name="uPassword" onblur="checkPass()" id="uPassword" placeholder="请输入密码"/>
+                <span id="passStrength"></span>
+            </td>
+
+        </tr>
+        <tr>
+            <td class="tableleft">真实姓名</td>
+            <td><input type="text" name="uTruename" id="uTruename" placeholder="请输入真实姓名" onblur="checkTruename()"/>
+                <span id="cTrueName"></span>
+            </td>
+        </tr>
+        <tr>
+            <td class="tableleft">邮箱</td>
+            <td><input type="text" name="uEmail" id="uEmail" placeholder="请输入邮箱" onblur="checkEmail()"/>
+                <span id="cEmail"></span>
+            </td>
+        </tr>
+        <tr>
+            <td class="tableleft">状态</td>
+            <td>
+                <input type="radio" name="uState" value="0" checked/> 启用
+                <input type="radio" name="uState" value="1"/> 禁用
+            </td>
+        </tr>
+        <tr>
+            <td class="tableleft">角色</td>
+            <td>
+                <select name="rId" id="role">
+
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td class="tableleft"></td>
+            <td>
+                <button class="btn btn-primary" type="button" onclick="addUser()">添加</button>&nbsp;&nbsp;<button
+                    type="button"
+                    class="btn btn-success"
+                    name="backid"
+                    id="backid">
+                返回列表
+            </button>
+            </td>
+        </tr>
+    </table>
+</form>
+</body>
+</html>

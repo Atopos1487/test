@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>添加药品--中软高科-2015</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap.css"/>
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap-responsive.css"/>
+    <link rel="stylesheet" type="text/css" href="../../Css/style.css"/>
+    <script type="text/javascript" src="/Js/jquery-1.11.1.js"></script>
+    <script type="text/javascript" src="/Js/bootstrap.js"></script>
+
+    <link href="/Css/fileinput.css" media="all" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="/Js/fileinput_locale_zh.js"></script>
+    <script type="text/javascript" src="/Js/fileinput.js"></script>
+
+
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+    </style>
+    <script type="text/javascript">
+        $(function () {
+            $('#backid').click(function () {
+                window.location.href = "index.html";
+            });
+        });
+    </script>
+    <script src="../../Js/fileinput.js"></script>
+    <script src="../../Js/fileinput_locale_zh.js"></script>
+</head>
+<body>
+<form id="myForm" class="definewidth m20">
+    <table class="table table-bordered table-hover definewidth m10">
+        <tr>
+            <td width="10%" class="tableleft">药品编号</td>
+            <td><input type="text" name="dr_id" disabled/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">药品名称</td>
+            <td><input type="text" name="dr_name" disabled/></td>
+        </tr>
+
+        <tr>
+            <td width="10%" class="tableleft">原图片</td>
+            <td> <img name="dr_url" src="1.png"/></td>
+        </tr>
+
+        <tr>
+            <td width="10%" class="tableleft">上传新图片</td>
+            <td> <input id="logo" name="logo"  type="file" required/></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <center>
+                    <button type="button" class="btn btn-primary" id="updateBtn">保存</button> &nbsp;&nbsp;<button
+                        type="button" class="btn btn-success" name="backid" id="backid">返回列表
+                </button>
+                </center>
+            </td>
+        </tr>
+    </table>
+</form>
+</body>
+</html>
+<script>
+    String.prototype.GetValue = function (para) {
+        let reg = new RegExp("(^|&)" + para + "=([^&]*)(&|$)");
+        let r = this.substr(this.indexOf("\?") + 1).match(reg);
+        if (r != null) return unescape(r[2]);
+        return null;
+    }
+
+    function queryAndShowInfo(dr_id){
+        //查询球队的名称和logo并回显到页面上
+        $.ajax({
+            type: "GET",
+            url: "/medicine/"+dr_id, //RESTful风格的API定义
+            data: "",
+            success: function (vo) {
+                let obj = vo.obj;
+                if (obj != null) {
+                    let dr_id = obj.dr_id == null ? "" : obj.dr_id;
+                    let dr_name = obj.dr_name == null ? "" : obj.dr_name;
+                    let dr_url = obj.dr_url;
+                    $("input[name='dr_id']").val(dr_id);
+                    $("input[name='dr_name']").val(dr_name);
+                    if(dr_url!=null){
+                        $("img[name='dr_url']").attr("src","/img/uploadFile/"+dr_url);
+                    }else{
+                        $("img[name='dr_url']").addClass("hidden");
+                        $("img[name='dr_url']").parent().html("还没有上传logo图片");
+                    }
+                }
+            }
+        });
+    }
+    $(function () {
+        //从url中获取页码和size的参数值
+        let url = document.location.toString();
+        let pageNum=url.GetValue("pageNum");
+        let pageSize=url.GetValue("pageSize");
+        let dr_id=url.GetValue("dr_id");
+        $("input[name='pageNum']").val(pageNum);
+        $("input[name='pageSize']").val(pageSize);
+        $("input[name='dr_id']").val(dr_id);
+        //查询球队的名称和logo并回显到页面上
+        queryAndShowInfo(dr_id);
+        myUploadLogo(dr_id,pageNum,pageSize);
+    });
+
+    function myUploadLogo(dr_id,pageNum,pageSize) {
+        //使用js把文件域转换成fileinput对象
+        $("#logo").fileinput({
+            uploadUrl:"/medicine/"+dr_id, //接受请求地址
+            uploadAsync : true, //默认异步上传
+            showUpload : true, //是否显示上传按钮,跟随文本框的那个
+            showRemove : true, //显示移除按钮,跟随文本框的那个
+            showCaption : true,//是否显示标题,就是那个文本框
+            showPreview : true, //是否显示预览,不写默认为true
+            dropZoneEnabled : false,//是否显示拖拽区域，默认不写为true，但是会占用很大区域
+            //minImageWidth: 50, //图片的最小宽度
+            //minImageHeight: 50,//图片的最小高度
+            //maxImageWidth: 1000,//图片的最大宽度
+            //maxImageHeight: 1000,//图片的最大高度
+            //maxFileSize: 0,//单位为kb，如果为0表示不限制文件大小
+            //minFileCount: 0,
+            maxFileCount : 1, //表示允许同时上传的最大文件个数
+            enctype : 'multipart/form-data',
+            validateInitialCount : true,
+            /* previewFileIcon : "<i class='glyphicon glyphicon-king'></i>",*/
+            msgFilesTooMany : "选择上传的文件数量({n}) 超过允许的最大数值{m}！",
+            allowedFileTypes : [ 'image' ],//配置允许文件上传的类型
+            allowedPreviewTypes : [ 'image' ],//配置所有的被预览文件类型
+            // allowedPreviewMimeTypes : ['image/jpeg','image/jpg'],//控制被预览的所有mime类型
+            language : 'zh'
+        });
+        //异步上传返回结果处理
+        $('#logo').on('fileerror', function(event, data, msg) {
+            alert("上传失败！"+msg);
+        });
+        //异步上传返回结果处理
+        $("#logo").on("fileuploaded", function(event, data, previewId, index) {
+            let ref = $(this).attr("data-ref");
+            $("input[name='" + ref + "']").val(data.response.url);
+            //上传成功
+            window.location.href = "/pages/medicine/index.html?pageNum=" + pageNum + "&pageSize=" + pageSize;
+        });
+    }
+</script>

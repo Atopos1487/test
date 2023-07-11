@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>添加收费项目--中软高科-2015</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap-responsive.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/style.css" />
+    <script type="text/javascript" src="../../Js/jquery.js"></script>
+    <script type="text/javascript" src="../../Js/jquery-1.11.1.js"></script>
+    <script type="text/javascript" src="../Js/jquery.sorted.js"></script>
+    <script type="text/javascript" src="../../Js/bootstrap.js"></script>
+    <script type="text/javascript" src="../../Js/ckform.js"></script>
+    <script type="text/javascript" src="../../Js/common.js"></script>
+    <script type="text/javascript" src="../../Js/ckeditor/ckeditor.js"></script>
+ 
+
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+
+
+    </style>
+    <script type="text/javascript">
+    $(function () {       
+		$('#backid').click(function(){
+				window.location.href="charge.html";
+		 });
+    });
+    </script>
+</head>
+<body>
+<form id="myForm"  class="definewidth m20">
+<table class="table table-bordered table-hover definewidth m10">
+    <tr>
+        <td width="10%" class="tableleft">编号</td>
+        <td> <input name="chap_id" type="text" disabled /></td>
+
+    </tr>
+    <tr>
+        <td width="10%" class="tableleft">收费项目名称</td>
+        <td><input name="chap_name" type="text"  /></td>
+    </tr>
+
+    <tr>
+        <td width="10%" class="tableleft">收费金额</td>
+        <td><input name="chap_money" type="text" /></td>
+    </tr>
+
+    <tr>
+        <td width="10%" class="tableleft">创建日期</td>
+        <td><input name="chap_intime" type="date" /></td>
+    </tr>
+
+    <tr>
+        <td colspan="2">
+			<center>
+				<button id="btnUpdate" class="btn btn-primary" type="button">保存</button> &nbsp;&nbsp;
+                <button type="button" class="btn btn-success" name="backid" id="backid">返回列表</button>
+			</center>
+		</td>
+    </tr>
+</table>
+</form>
+</body>
+</html>
+<script>
+    String.prototype.GetValue= function(para) {
+        let reg = new RegExp("(^|&)"+ para +"=([^&]*)(&|$)");
+        let r = this.substr(this.indexOf("\?")+1).match(reg);
+        if (r!=null) return unescape(r[2]); return null;
+    }
+
+//add 一个
+    $(function () {
+        //提交按钮的单击事件
+        $("#btnUpdate").click(function () {
+            $.ajax({
+                type: "POST",
+                url: "/charge/",
+                data: $("#myForm").serialize(),
+                dataType:"json",
+                success: function(vo){
+                    if(vo.code==200) {
+                        window.location.href = "/pages/hospital/charge.html?";
+                    }else{
+                        alert("添加失败！"+vo.msg);
+                    }
+                }
+            });
+        });
+    });
+    $(function () {
+        //根据地址获取chap_id,如果null则执行增加，否则执行更新
+        let url = document.location.toString();//获取URL
+
+        let chap_id=url.GetValue("chap_id");
+
+        let pageNum=url.GetValue("pageNum");
+        let pageSize=url.GetValue("pageSize");
+        //根据id查询要更新的球队信息并回显到页面
+        queryById(chap_id);
+
+//提交按钮的单击事件--实现真正的更新
+        //update一个
+        $("#btnUpdate").click(function () {
+            $.ajax({
+                type: "POST",//这里必须写POST  resultful风格的要求；
+                url: "/charge/"+chap_id,
+                data: $("#myForm").serialize()+"&_method=PUT",
+                dataType:"json",
+                success: function(vo){
+                    if(vo.code==200) {
+                        window.location.href = "/pages/hospital/charge.html?";
+                            // "pageNum="+pageNum+"&pageSize="+pageSize
+                    }else{
+                        alert("更新失败！"+vo.msg);
+                    }
+                }
+            });
+        });
+    });
+    function queryById(chap_id) {
+        $.ajax({
+            type: "GET",
+            url: "/charge/"+chap_id, //RESTful风格的API定义
+            data: "",
+            success: function (vo) {
+                let obj=vo.obj;
+                let chap_id=obj.chap_id;
+                let chap_name=obj.chap_name;
+                let chap_money=obj.chap_money;
+                let chap_intime=obj.chap_intime;
+                //填充到（input）框里
+                $("input[name='chap_id']").val(chap_id);
+                $("input[name='chap_name']").val(chap_name);
+                $("input[name='chap_money']").val(chap_money);
+                $("input[name='chap_intime']").val(chap_intime);
+
+
+            }
+        });
+    }
+
+</script>

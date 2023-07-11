@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>结算详细--中软高科-2015</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap-responsive.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/style.css" />
+    <script type="text/javascript" src="../../Js/jquery.js"></script>
+    <script type="text/javascript" src="../Js/jquery.sorted.js"></script>
+    <script type="text/javascript" src="../../Js/bootstrap.js"></script>
+    <script type="text/javascript" src="../../Js/ckform.js"></script>
+    <script type="text/javascript" src="../../Js/common.js"></script>
+
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+
+
+    </style>
+
+</head>
+<body>
+
+<table class="table table-bordered table-hover definewidth m10" >
+    <thead>
+    <tr>
+        <th>住院号</th>
+        <th>病人姓名</th>
+        <th>收费项目</th>
+        <th>收费金额</th>
+        <th>检查日期</th>
+    </tr>
+    </thead>
+    <tbody id="tbody">
+
+    </tbody>
+</table>
+
+<table class="table table-bordered table-hover definewidth m10" >
+    <input type="hidden" id="pageNum" name="pageNum" value=""/>
+    <tr>
+        <th colspan="5">
+            <div>
+                <button type="button" class="btn btn-success" name="backid" id="backid">返回列表</button>
+                <button type="button" class="btn btn-success" >导出excel</button>
+            </div>
+
+        </th>
+    </tr>
+</table>
+
+
+
+
+</body>
+</html>
+
+
+<script type="text/javascript">
+    String.prototype.GetValue= function(para) {
+        let reg = new RegExp("(^|&)"+ para +"=([^&]*)(&|$)");
+        let r = this.substr(this.indexOf("\?")+1).match(reg);
+        if (r!=null) return unescape(r[2]); return null;
+    }
+    $(function () {
+        let url = document.location.toString();//获取URL
+        let p_id=url.GetValue("p_id");
+        let pageNum=url.GetValue("pageNum");
+        let pageSize=url.GetValue("pageSize");
+        let queryId=url.GetValue("queryId");
+        let queryName=url.GetValue("queryName");
+        let beh_name;
+        let beh_closeprice;
+        let chap_total_money = 0;
+
+        $('#backid').click(function(){
+            window.location.href="charge2.html";
+        });
+
+        //点击 （详情） 按钮后和（p_id） 进入该页面 （将会获取） patient表的所有信息；
+        $.ajax({
+            type: "GET",
+            url: "/charge/beh/"+p_id,
+            data: "",
+            dataType:"json",
+            success: function (vo) {
+                let obj=vo.obj;
+                beh_name = obj.p_name;
+            }
+        });
+        // 用 p_id进行多表联查获取对应的（chap_id）包括的全部数据
+        $.ajax({
+            type: "GET",
+            url: "/charge/beh/",
+            data: "beh_id=" + p_id,
+            dataType:"json",
+            success: function (vo) {
+                let list=vo.obj;
+                let str="";
+                for(let i = 0; i<list.length; i++){
+                    let obj=list[i];
+                    let id=p_id;
+                    let p_name=beh_name;
+                    let chap_name = obj.chap_name;
+                    let chap_money = obj.chap_money;
+                    let chap_intime = obj.chap_intime;
+                     // alert(chap_name);
+                    chap_total_money += chap_money;
+                    str += '<tr >' +
+                        '            <td> ' + p_id + '</td>' +
+                        '            <td> ' + beh_name + '</td>' +
+                        '            <td> ' + chap_name + '</td>' +
+                        '            <td> ' + chap_money + '</td>' +
+                        '            <td> ' + chap_intime + '</td>' +
+                        '</tr>';
+                }
+                $("#tbody").html(str);
+            }
+        });
+    });
+</script>

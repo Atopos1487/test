@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>增加押金--中软高科-2015</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap-responsive.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/style.css" />
+    <script type="text/javascript" src="../../Js/jquery.js"></script>
+    <script type="text/javascript" src="../../Js/bootstrap.js"></script>
+    <script type="text/javascript" src="../../Js/ckform.js"></script>
+    <script type="text/javascript" src="../../Js/common.js"></script>
+    <script type="text/javascript" src="../../Js/ckeditor/ckeditor.js"></script>
+
+
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+
+
+    </style>
+    <script type="text/javascript">
+        $(function () {
+            $('#backid').click(function(){
+                window.location.href="/pages/hospital/index.html";
+            });
+        });
+    </script>
+</head>
+<body>
+<form id="myForm" class="definewidth m20">
+    <table class="table table-bordered table-hover definewidth m10">
+        <tr>
+            <td width="10%" class="tableleft">病历号</td>
+            <td><input name="hrId" type="text" readonly></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">姓名</td>
+            <td><input readonly type="text" name="hrName"></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">证件号</td>
+            <td><input name="hrCardId" type="text" readonly></td>
+        </tr>
+
+        <tr>
+            <td width="10%" class="tableleft">余额</td>
+            <td><input name="balance" type="text" readonly>元</td>
+        </tr>
+
+        <tr>
+            <td width="10%" class="tableleft">缴费押金</td>
+            <td><input type="text" name="addBalance" />元</td>
+        </tr>
+
+        <tr>
+            <td colspan="2">
+                <center>
+                    <button id="btnUpdate" class="btn btn-primary" type="button">保存</button> &nbsp;&nbsp;<button type="button" class="btn btn-success" name="backid" id="backid">返回列表</button>
+                </center>
+            </td>
+        </tr>
+    </table>
+</form>
+</body>
+</html>
+<script>
+    String.prototype.GetValue= function(para) {
+        var reg = new RegExp("(^|&)"+ para +"=([^&]*)(&|$)");
+        var r = this.substr(this.indexOf("\?")+1).match(reg);
+        if (r!=null) return unescape(r[2]); return null;
+    }
+
+    var antecedent = undefined;
+    var behId = undefined;
+    function queryAndShowInfo(hrId){
+        $.ajax({
+            type: "GET",
+            url: "/beHospital/hrId/"+hrId, //RESTful风格的API定义
+            data: "",
+            success: function (vo) {
+                var str='';
+                var obj=vo.obj;
+                var hrId=obj.hosr_id;
+                var hrName=obj.hosr_name;
+                var hrCardId = obj.hosr_idCar;
+                $("input[name='hrId']").val(hrId);
+                $("input[name='hrName']").val(hrName);
+                $("input[name='hrCardId']").val(hrCardId);
+            }
+        });
+    }
+
+    function queryBlance(hrId){
+        $.ajax({
+            type: 'GET',
+            url: '/beHospital/pay/'+hrId,
+            dataType: 'json',
+            async:false,
+            success: function (vo) {
+                var obj = vo.obj;
+                behId = obj.beh_id;
+                antecedent = obj.beh_antecedent;
+                var behAntecedent = obj.beh_antecedent;
+                var totalPrice = obj.totalPrice;
+                var balance = parseInt(behAntecedent)-parseInt(totalPrice);
+                $("input[name='balance']").val(balance);
+            }
+        });
+
+    }
+
+    $(function () {
+        //从url中获取页码和size的参数值
+        var url = document.location.toString();
+        var pageNum=url.GetValue("pageNum");
+        var pageSize=url.GetValue("pageSize");
+        var hrId=url.GetValue("hrId");
+        if (pageNum==null || pageNum==""){
+            $("input[name='pageNum']").val(1);
+        }
+        if (pageSize==null || pageSize ==""){
+            $("input[name='pageSize']").val(5);
+        }
+        $("input[name='pageNum']").val(pageNum);
+        $("input[name='pageSize']").val(pageSize);
+        $("input[name='hrId']").val(hrId);
+
+        queryAndShowInfo(hrId);
+
+        queryBlance(hrId)
+
+        //修改按钮的单击事件
+        $("#btnUpdate").click(function () {
+            var a = $("input[name='addBalance']").val();
+            let b = parseInt(a);
+            var value = parseInt(b+antecedent);
+            $.ajax({
+                type: "POST",
+                url: "/beHospital/pay",
+                data: {_method:"PUT",id:behId,price:value},
+                dataType:"json",
+                success: function(vo){
+                    if(vo.code==200) {
+                        window.location.href = "/pages/hospital/index.html";
+                    }else{
+                        alert("修改失败！"+vo.msg);
+                    }
+                }
+            });
+        });
+
+    });
+
+</script>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>修改医生--中软高科-2015</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap-responsive.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/style.css" />
+    <script type="text/javascript" src="../../Js/jquery.js"></script>
+    <script type="text/javascript" src="../Js/jquery.sorted.js"></script>
+    <script type="text/javascript" src="../../Js/bootstrap.js"></script>
+    <script type="text/javascript" src="../../Js/ckform.js"></script>
+    <script type="text/javascript" src="../../Js/common.js"></script>
+    <script type="text/javascript" src="../../Js/ckeditor/ckeditor.js"></script>
+ 
+
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+
+
+    </style>
+    <script type="text/javascript">
+    $(function () {       
+		$('#backid').click(function(){
+				window.location.href="index.html";
+		 });
+    });
+    </script>
+</head>
+<body>
+<form id="myForm" class="definewidth m20">
+    <table class="table table-bordered table-hover definewidth m10">
+        <tr>
+            <td width="10%" class="tableleft">姓名</td>
+            <td><input type="text" name="d_name" value=""/></td>
+        </tr>
+
+        <tr>
+            <td width="10%" class="tableleft">身份证号</td>
+            <td><input type="text" name="d_idcar" value=""/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">手机</td>
+            <td><input type="text" name="d_phone" /></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">座机</td>
+            <td><input type="text" name="d_telphone" value=""/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">性别</td>
+            <td><input type="radio" name="d_sex" value="0" checked/>男&nbsp;&nbsp;&nbsp;
+                <input type="radio" name="d_sex" value="1"/>女
+            </td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">出生年月</td>
+            <td><input type="date" name="d_birthday" value=""/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">年龄</td>
+            <td><input type="text" name="d_age" value=""/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">电子邮箱</td>
+            <td><input type="text" name="d_email" value=""/></td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">所属科室</td>
+            <td>
+                <select id="dep_name" name="dep_name">
+
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">学历</td>
+            <td>
+                <select id="d_xueli" name="d_xueli">
+                    <option value="1">专科</option>
+                    <option value="2">本科</option>
+                    <option value="3">硕士</option>
+                    <option value="4">博士</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td width="10%" class="tableleft">备注</td>
+            <td><textarea name="d_desc"></textarea></td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <center>
+                    <button id="btnEdit" class="btn btn-primary" type="button">保存</button> &nbsp;&nbsp;
+                    <button type="button" class="btn btn-success" name="backid" id="backid">返回列表</button>
+                </center>
+            </td>
+        </tr>
+    </table>
+</form>
+</body>
+</html>
+
+<script type="text/javascript">
+    String.prototype.GetValue= function(para) {
+        let reg = new RegExp("(^|&)"+ para +"=([^&]*)(&|$)");
+        let r = this.substr(this.indexOf("\?")+1).match(reg);
+        if (r!=null) return unescape(r[2]); return null;
+    }
+
+    $(function () {
+        $.ajax({
+            type: "GET",
+            url: "/doctor/dep/all",
+            data: "",//主要是分页和多条件参数数据
+            dataType:"json",
+            success: function(vo){
+                let list = vo.obj;
+                for(let i = 0; i < list.length; i++){
+                    let dep_id = list[i].dep_id;
+                    let dep_name = list[i].dep_name;
+                    $("#dep_name").append('<option value="' + dep_id + '">' + dep_name + '</option>');
+                }
+            }
+        });
+
+        let url = document.location.toString();
+        let d_id = url.GetValue("d_id");
+        let pageNum = url.GetValue("pageNum");
+        let pageSize=url.GetValue("pageSize");
+        let queryD_id = url.GetValue("queryD_id");
+        let queryD_name = url.GetValue("queryD_name");
+        let queryDep_name = url.GetValue("queryDep_name");
+
+        //回显数据；
+        $.ajax({
+            type: "GET",
+            url: "/doctor/" + d_id,
+            data: "",
+            success: function (vo) {
+                let obj = vo.obj;
+                let d_name = obj.d_name;
+                let d_idcar = obj.d_idcar;
+                let d_phone = obj.d_phone;
+                let d_telphone = obj.d_telphone;
+                let d_sex = obj.d_sex;
+                let d_birthday = obj.d_birthday;
+                let d_age = obj.d_age;
+                let d_email = obj.d_email;
+                let dep_id = obj.dep_id;
+                let d_xueli = obj.d_xueli;
+                let d_desc = obj.d_desc;
+                $("input[name='d_name']").val(d_name);
+                $("input[name='d_idcar']").val(d_idcar);
+                $("input[name='d_phone']").val(d_phone);
+                $("input[name='d_telphone']").val(d_telphone);
+                $("radio[name='d_sex'][value='" + d_sex + "']").attr("checked",true);
+                $("input[name='d_birthday']").val(d_birthday);
+                $("input[name='d_age']").val(d_age);
+                $("input[name='d_email']").val(d_email);
+                $("#d_xueli option").removeAttr("selected");
+                $("#d_xueli option[value='" + d_xueli + "']").attr("selected","selected");
+                $("#dep_name option").removeAttr("selected");
+                $("#dep_name option[value='" + dep_id + "']").attr("selected","selected");
+                $("textarea[name='d_desc']").html(d_desc);
+
+            }
+        });
+
+        $("#btnEdit").click(function (){
+            $.ajax({
+                type: "POST",
+                url: "/doctor/" + d_id,
+                data: $("#myForm").serialize() + "&_method=PUT",//主要是分页和多条件参数数据
+                dataType:"json",
+                success: function(vo){
+                    if(vo.code === 200) {
+                        window.location.href = "index.html?";
+                    }else{
+                        alert("添加失败！"+vo.msg);
+                    }
+                }
+            });
+        });
+
+        $('#backid').click(function(){
+            window.location.href="index.html?";
+        });
+    });
+</script>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>住院结算--中软高科-2015</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/bootstrap-responsive.css" />
+    <link rel="stylesheet" type="text/css" href="../../Css/style.css" />
+    <script type="text/javascript" src="../../Js/jquery-1.11.1.js"></script>
+    <script type="text/javascript" src="../../Js/layer/layer.js"/>
+    <script type="text/javascript" src="../../Js/bootstrap.js"></script>
+    <script type="text/javascript" src="../../Js/ckform.js"></script>
+    <script type="text/javascript" src="../../Js/common.js"></script>
+
+    <style type="text/css">
+        body {
+            padding-bottom: 40px;
+        }
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+
+
+    </style>
+    <script type="text/javascript">
+        /*$(function () {
+            $('#newNav').click(function(){
+                window.location.href="dispensing-gives.html";
+            });
+        });*/
+
+        function checkall(){
+            var alls=document.getElementsByName("check");
+            var ch=document.getElementById("checkall");
+            if(ch.checked){
+                for(var i=0;i<alls.length;i++){
+                    alls[i].checked=true;
+                }
+            }else{
+                for(var i=0;i<alls.length;i++){
+                    alls[i].checked=false;
+                }
+            }
+        }
+        function delAll(){
+            var alls=document.getElementsByName("check");
+            var ids=new Array();
+            for(var i=0;i<alls.length;i++){
+                if(alls[i].checked){
+                    ids.push(alls[i].value);
+                }
+            }
+            if(ids.length>0){
+                if(confirm("确认操作?")){
+                    alert("成功!");
+                }
+            }else{
+                alert("请选中要操作的项");
+            }
+        }
+    </script>
+</head>
+<body>
+
+<form id="myForm" class="definewidth m20">
+    <input name="pageNum" type="hidden">
+    <input name="pageSize" type="hidden">
+    <table class="table table-bordered table-hover definewidth m10">
+        <tr>
+            <td width="10%" class="tableleft">病例号：</td>
+            <td><input type="text" name="hosr_id" /></td>
+            <td width="10%" class="tableleft">姓名：</td>
+            <td><input type="text" name="hosr_name"/></td>
+        </tr>
+        <tr>
+            <td colspan="4"><center>
+                <button onclick="loadData()" class="btn btn-primary" type="button">查询</button>
+                <button type="reset" class="btn btn-primary" type="button">清空</button>
+            </center>
+            </td>
+        </tr>
+    </table>
+</form>
+
+<table class="table table-bordered table-hover definewidth m10" >
+    <thead>
+    <tr>
+        <th><input type="checkbox" id="checkall" onChange="checkall();"></th>
+        <th>病历号</th>
+        <th>姓名</th>
+        <th>押金</th>
+        <th>当前余额</th>
+        <th>状态</th>
+        <th>操作</th>
+    </tr>
+    </thead>
+    <tbody id="dataText">
+
+    </tbody>
+</table>
+
+<table class="table table-bordered table-hover definewidth m10" >
+    <tr><th colspan="5">
+        <div class="inline pull-right page" id="pageInfo">
+            <a href='#' id="firstPage">首页</a>
+            <a href='#' id="prePage">上一页</a>
+            <a href='#' id="nextPage">下一页</a>
+            <a href='#' id="lastPage">最后一页</a>
+            &nbsp;&nbsp;&nbsp;共<span id="total"></span>条记录
+            &nbsp;&nbsp;第<span id="currentPage"></span>页
+            共<span id="pages"></span>页
+        </div>
+        <div>
+            <button type="button" class="btn btn-success" id="delPro">导出Excel</button>
+        </div>
+
+    </th></tr>
+</table>
+
+</body>
+</html>
+<script>
+
+    //页面加载完毕之后发送异步请求
+    $(function(){
+        loadData();
+        $("div[class='inline pull-right page']>a").click(function(){
+            var num=$(this).attr("name");
+            if (num==0){
+                return;
+            }
+            $("input[name='pageNum']").val(num);
+            loadData();
+        });
+    });
+    //填充分页信息
+    function fillPageData(pageInfo) {
+        //填充信息
+        $("#total").html(pageInfo.total);
+        $("#pages").html(pageInfo.pages);
+        $("input[name='pageNum']").val(pageInfo.pageNum);
+        $("input[name='pageSize']").val(pageInfo.pageSize);
+        //设置按钮的属性值和样式
+        $("#firstPage").attr("name",1);
+        $("#currentPage").html(pageInfo.pageNum);
+        $("#prePage").attr("name",pageInfo.prePage);
+        $("#nextPage").attr("name",pageInfo.nextPage);
+        $("#lastPage").attr("name",pageInfo.pages);
+        $("#firstPage").removeClass("disabled");
+        $("#prePage").removeClass("disabled");
+        $("#firstPage").removeClass("disabled");
+        $("#prePage").removeClass("disabled");
+        if(pageInfo.isFirstPage){//如果是第一页：上一页和首页禁用
+            $("#firstPage").addClass("disabled");
+            $("#prePage").addClass("disabled");
+        }
+        if(pageInfo.isLastPage){//如果已经是最后一页：下一页和末页禁用
+            $("#nextPage").addClass("disabled");
+            $("#lastPage").addClass("disabled");
+        }
+    }
+
+    String.prototype.GetValue= function(para) {
+        var reg = new RegExp("(^|&)"+ para +"=([^&]*)(&|$)");
+        var r = this.substr(this.indexOf("\?")+1).match(reg);
+        if (r!=null) return unescape(r[2]); return null;
+    };
+
+    //时间戳转换为日期
+    function times(timeS) {
+        // 比如需要这样的格式 yyyy-MM-dd hh:mm:ss
+        var date = new Date(timeS);
+        Y = date.getFullYear() + '-';
+        M = (date.getMonth()+1 < 10 ? '0'+(date.getMonth()+1) : date.getMonth()+1) + '-';
+        D = date.getDate()<10?'0'+date.getDate():date.getDate() + '  ';
+        h = date.getHours()<10?'0'+date.getHours():date.getHours();
+        m = date.getMinutes()<10? '0'+date.getMinutes() :date.getMinutes();
+
+        return Y+M+D+" "+h+':'+m;
+    }
+
+    //病号状态
+    function statusC(num) {
+        if (num == 0) {
+            return "未结算";
+        } else if (num == 1) {
+            return "已结算";
+        }
+    }
+
+
+
+    //加载数据
+    function loadData(){
+        var url = document.location.toString();
+        var pageNum=url.GetValue("pageNum");
+        var pageSize=url.GetValue("pageSize");
+        if(pageNum!=null&&$("input[name='pageNum']").val()!=null){
+            $("input[name='pageNum']").val(pageNum);
+        }
+        if(pageSize!=null&&$("select[name='pageSize']").val()!=null){
+            $("select[name='pageSize']").val(pageSize);
+        }
+        //alert($("#myForm").serialize())
+
+        $.ajax({
+            type: "GET",
+            url: "/pay/list",
+            data: $("#myForm").serialize(),//主要是分页和多条件参数数据
+            dataType:"json",
+            success: function(vo){
+                //alert( "Data Saved: " + vo );
+                var list=vo.pageInfo.list;
+                var str="";
+                for(var i=0;i<list.length;i++){
+                    var obj=list[i];
+                    var hrId=obj.hosr_id;
+                    var bhId = obj.beh_id;
+                    var hrName = obj.hosregister.hosr_name;
+                    var antecedent = obj.beh_antecedent;
+                    var closePrice = obj.beh_closeprice;
+                    var status = closePrice==0?statusC(closePrice):statusC(closePrice);
+                    // console.log("price:"+typeof  closePrice)
+                    var operation ='';
+                    if (closePrice==1) {
+                        operation='<a href="/pages/hospital/account-look.html?bhId='+bhId+'">详细信息</a>';
+                    }else if (closePrice==0){
+                        operation='<a href="/pages/hospital/account-look.html?bhId='+bhId+'">详细信息</a>&nbsp;&nbsp;&nbsp;' +
+                            '<a onclick="Amount('+hrId+','+bhId+')">结算</a>';
+                    }
+                    str +=' <tr >\n' +
+                        '         \t<td style="vertical-align:middle;"><input type="checkbox" name="check" value="1"></td>\n' +
+                        '            <td style="vertical-align:middle;">'+hrId+'</td>\n' +
+                        '            <td style="vertical-align:middle;">'+hrName+'</td>\n' +
+                        '            <td style="vertical-align:middle;">'+antecedent+'元</td>\n' +
+                        '           <td style="vertical-align:middle;"><span id="balance'+i+'">'+balance(hrId)+'</span>元</td>\n' +
+                        '            <td style="vertical-align:middle;">'+status+'</td>\n' +
+                        '            <td style="vertical-align:middle;">'+operation+'</td>\n' +
+                        '        </tr>';
+
+
+                    /* $.ajax({
+                         type: 'GET',
+                         url: '/patientCharge/byHrIdAmount/'+hrId,
+                         dataType: 'json',
+                         success: function (vo) {
+                             var obj = vo.obj;
+                             balance = obj.balance;
+                             //alert(balance)
+                         }
+                     });
+                     //alert(hrId)
+                     $("#balance"+i).html(1);*/
+
+                }
+                $("#dataText").html(str);
+                //填充分页数据
+                fillPageData(vo.pageInfo);
+
+
+            }
+        });
+
+    }
+
+
+    var num=0; //注意地方1
+    function balance(id){
+        $.ajax({
+            type: 'GET',
+            url: '/beHospital/pay/'+id,
+            dataType: 'json',
+            async: false,//注意地方
+            success: function (vo) {
+                var obj = vo.obj;
+                var behAntecedent = obj.beh_antecedent;
+                var totalPrice = obj.totalPrice;
+                var balance = behAntecedent-totalPrice;
+                num = balance;
+            }
+        });
+        return num;
+    }
+
+    function Amount(hrId,bhId) {
+        var loadA = layer.load();
+        //alert("hrId:"+hrId+"---antecedent:"+antecedent);
+        var number = balance(hrId);
+        //alert(number)
+        if (number<0){
+            //alert("抱歉,余额不足，不能结算，请充钱!");
+            layer.close(loadA);
+            layer.msg("抱歉,余额不足，不能结算，请充钱!");
+        }else{
+            //alert("正在结算中");
+            $.ajax({
+                type: 'POST',
+                url: '/pay/'+bhId,
+                data: '&_method=DELETE',
+                dataType: 'json',
+                success: function (vo) {
+                    layer.load(loadA);
+                    if (vo.code==200){
+                        loadData();
+                    }
+                }
+            })
+
+        }
+    }
+
+</script>
